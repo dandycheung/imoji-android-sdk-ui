@@ -5,4 +5,5 @@
 .DS_Store
 /build
 imojigraphics/build
+imojigraphics/obj
 /captures

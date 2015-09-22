@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="wrap_content"
+              android:layout_height="62dp"
+              android:clickable="true"
+              android:focusableInTouchMode="true"
+              android:padding="5dp">
+
+    <LinearLayout
+        android:layout_gravity="center"
+        android:id="@+id/tag_wrapper"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:clickable="true"
+        android:focusableInTouchMode="true"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tv_tag"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@null"
+            android:ellipsize="end"
+            android:gravity="center_vertical"
+            android:padding="10dp"
+            android:scrollHorizontally="true"
+            android:textColor="@android:color/white"/>
+
+        <ImageButton
+            android:id="@+id/ib_cancel"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/tv_tag"
+            android:background="@null"
+            />
+        <!-- android:src="@drawable/create_imoji_cancel"-->
+
+    </LinearLayout>
+</LinearLayout>

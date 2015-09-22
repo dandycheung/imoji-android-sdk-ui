@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Imoji Android SDK UI</string>
+    <string name="continue_camel">Continue</string>
+    <string name="str_public">Public</string>
+    <string name="string_private">Private</string>
+    <string name="upload">Upload</string>
+</resources>

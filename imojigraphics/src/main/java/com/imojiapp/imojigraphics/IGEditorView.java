@@ -32,6 +32,8 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
     private boolean zoomInOnAspectFit;
     private float density = 1.f;
     private Queue<Runnable> mGLQueue = new ConcurrentLinkedQueue<>();
+    private StateListener stateListener = null;
+    private int state = IG.EDITOR_DRAW, substate = IG.EDITOR_IDLE;
 
     public IGEditorView(Context context) {
         this(context, null);
@@ -146,6 +148,13 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
             }
         }
 
+        mGLQueue.add(new Runnable() {
+            @Override
+            public void run() {
+                updateState();
+            }
+        });
+
         return true;
     }
 
@@ -198,15 +207,29 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
             float viewportAspect = surfaceWidth / surfaceHeight;
             float imageAspect = imageWidth / imageHeight;
 
-            float zoom;
-            if(imageAspect > viewportAspect) {
-                zoom = surfaceWidth / imageWidth;
-            } else {
-                zoom = surfaceHeight / imageHeight;
-            }
+            float zoom = imageAspect > viewportAspect ?
+                    surfaceWidth / imageWidth :
+                    surfaceHeight / imageHeight;
 
             IG.EditorZoomTo(igEditor, zoomInOnAspectFit ? zoom : Math.min(1, zoom));
         }
+    }
+
+    private void updateState() {
+        final int newState = IG.EditorGetState(igEditor);
+        final int newSubstate = IG.EditorGetSubstate(igEditor);
+
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if(stateListener != null && (newState != state || newSubstate != substate)) {
+                    state = newState;
+                    substate = newSubstate;
+
+                    stateListener.onStateChanged(newState, newSubstate);
+                }
+            }
+        });
     }
 
     public void undo() {
@@ -283,7 +306,7 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
     /**
      * Get output image, cropped to bounds of edge paths and notify caller; destroy after use
      */
-    public void getOutputBitmap(final OnBitmapReady callback) {
+    public void getOutputBitmap(final BitmapListener callback) {
         if (igEditor == 0) {
             callback.onBitmapOutputReady(null);
         } else {
@@ -307,7 +330,7 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
     }
 
     // Return an output image, cropped and trimmed to edge paths; destroy after use
-    public void getTrimmedOutputBitmap(final OnBitmapReady callback) {
+    public void getTrimmedOutputBitmap(final BitmapListener callback) {
         if (igEditor == 0) {
             callback.onBitmapOutputReady(null);
         } else {
@@ -364,10 +387,24 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
         this.zoomInOnAspectFit = zoomInOnAspectFit;
     }
 
-    /**
-     * Callback interface for when user requests for the output bitmap.
-     */
-    public interface OnBitmapReady {
+    public int getState() {
+        return state;
+    }
+
+    public int getSubstate() {
+        return substate;
+    }
+
+    public void setStateListener(StateListener stateListener) {
+        this.stateListener = stateListener;
+    }
+
+    public interface StateListener {
+        void onStateChanged(int igEditorState, int igEditorSubstate);
+    }
+
+    // Callback interface for when user requests the output bitmap
+    public interface BitmapListener {
         void onBitmapOutputReady(Bitmap bitmap);
     }
 }

@@ -1,10 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
           package="com.imojiapp.imoji.sdk.ui">
 
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application android:allowBackup="true"
-                 android:label="@string/app_name"
-                 android:icon="@mipmap/ic_launcher"
-                 android:theme="@style/AppTheme">
+                 android:label="@string/app_name">
+
+        <activity android:name=".ImojiEditorActivity" android:theme="@style/AppTheme.NoActionBar"></activity>
 
     </application>
 

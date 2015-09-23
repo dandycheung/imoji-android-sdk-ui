@@ -35,8 +35,8 @@ public class IG {
     public static final int BORDER_LITE = 2;
     public static final int BORDER_DEBUG = 3;
 
-    public static final int IG_BORDER_ELEMENT_FILL = 1;
-    public static final int IG_BORDER_ELEMENT_STROKE = 2;
+    public static final int BORDER_ELEMENT_FILL = 1;
+    public static final int BORDER_ELEMENT_STROKE = 2;
 
     public static native int BorderCreatePreset(int width, int height, int igBorderPreset);
     public static native int BorderCreate(int width, int height);
@@ -53,10 +53,18 @@ public class IG {
     public static native int WebPGetPaths(byte[] data, float x, float y, float width, float height);
 
     // IGEditor.h
-    public static final int TOUCH_BEGAN = 1;
+    public static final int TOUCH_BEGAN = 1; // IGTouchType
     public static final int TOUCH_MOVED = 2;
     public static final int TOUCH_ENDED = 3;
     public static final int TOUCH_CANCELED = 4;
+
+    public static final int EDITOR_DRAW = 1; // IGEditorState
+    public static final int EDITOR_NUDGE = 2;
+
+    public static final int EDITOR_IDLE = 1; // IGEditorSubstate
+    public static final int EDITOR_DRAG = 2;
+    public static final int EDITOR_PINCH = 3;
+    public static final int EDITOR_HOLD = 4;
 
     public static native int EditorCreate(int igInputImage);
     public static native void EditorDestroy(int igEditor);
@@ -66,6 +74,9 @@ public class IG {
     public static native void EditorSetDotColor(int igEditor, int red, int green, int blue, int alpha);
     public static native void EditorSetStrokeWidth(int igEditor, float strokeWidth);
     public static native void EditorSetImageAlpha(int igEditor, int alpha);
+    public static native int EditorGetState(int igEditor);
+    public static native int EditorGetSubstate(int igEditor);
+
     public static native void EditorTouchEvent(int igEditor, int igTouchType, int igTouchID, float x, float y);
     public static native void EditorScrollTo(int igEditor, float x, float y);
     public static native void EditorZoomTo(int igEditor, float zoom);

@@ -9,8 +9,10 @@
     tools:showIn="@layout/activity_main"
     tools:context=".MainActivity">
 
-    <FrameLayout
-        android:id="@+id/container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"></FrameLayout>
+
+    <ImageView
+        android:layout_centerInParent="true"
+        android:id="@+id/iv_outlined_imoji"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 </RelativeLayout>

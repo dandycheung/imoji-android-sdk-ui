@@ -4,76 +4,40 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?colorPrimary"
+    android:background="?android:windowBackground"
     tools:context="com.imojiapp.imoji.fragments.imoji.TagImojiFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <!--<com.imojiapp.imoji.view.CheckeredView-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="match_parent"-->
-    <!--app:checkerSize="10dp"-->
-    <!--app:firstCheckerColor="#00000000"-->
-    <!--app:secondCheckerColor="#1A231F20"/>-->
+    <android.widget.Toolbar
+        android:id="@+id/imoji_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:background="?colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+
+        <TextView
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/tag"
+            android:textSize="@dimen/tag_title_text_size"/>
+
+        <ImageButton
+            android:background="?selectableItemBackground"
+            android:layout_gravity="right"
+            android:src="@drawable/create_tag_proceed"
+            android:id="@+id/ib_upload"
+            android:layout_width="48dp"
+            android:layout_height="48dp"/>
+    </android.widget.Toolbar>
 
     <RelativeLayout
         android:id="@+id/tag_container"
         android:layout_width="match_parent"
         android:layout_height="130dp"
-        android:layout_marginTop="10dp"
+        android:layout_below="@id/imoji_toolbar"
+        android:layout_marginTop="16dp"
         android:orientation="horizontal">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-
-            <FrameLayout
-                android:layout_width="0dp"
-                android:layout_height="130dp"
-                android:layout_toLeftOf="@+id/iv_imoji"
-                android:layout_weight="1">
-
-                <CheckBox
-                    android:id="@+id/cb_tag_private"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-
-                    android:checked="true"
-                    android:paddingRight="14dp"
-                    android:text="@string/string_private"
-                    android:textSize="18sp"/>
-            </FrameLayout>
-            <!--android:button="@null"-->
-            <!--android:drawableTop="@drawable/ic_action_tag_private"-->
-            <!--android:gravity="center"-->
-            <!--android:text="@string/string_private"-->
-            <!--android:textColor="@color/tag_text_color"-->
-
-            <FrameLayout
-                android:layout_width="0dp"
-                android:layout_height="130dp"
-                android:layout_toRightOf="@+id/iv_imoji"
-                android:layout_weight="1">
-
-                <CheckBox
-                    android:id="@+id/cb_tag_public"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:checked="false"
-                    android:paddingLeft="14dp"
-                    android:text="@string/str_public"
-                    android:textSize="18sp"/>
-                <!--android:button="@null"-->
-                <!--android:drawableTop="@drawable/ic_action_tag_public"-->
-                <!--android:gravity="center"-->
-
-                <!--android:textColor="@color/tag_text_color"-->
-            </FrameLayout>
-
-        </LinearLayout>
-
 
         <ImageView
             android:id="@+id/iv_imoji"
@@ -85,13 +49,14 @@
     </RelativeLayout>
 
     <LinearLayout
+        android:layout_marginTop="16dp"
         android:id="@+id/tag_editor"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_below="@id/tag_container"
-        android:clickable="true"
         android:layout_marginLeft="30dp"
         android:layout_marginRight="30dp"
+        android:clickable="true"
         android:focusableInTouchMode="true"
         android:orientation="horizontal">
 
@@ -102,9 +67,11 @@
             android:layout_weight="1"
             android:background="@null"
             android:clickable="true"
+            android:hint="@string/add_tags"
             android:cursorVisible="true"
             android:editable="true"
             android:ellipsize="end"
+            android:textColorHint="#E8E8E8"
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:gravity="center_vertical"
@@ -113,7 +80,9 @@
             android:padding="10dp"
             android:scrollHorizontally="true"
             android:textColor="@android:color/white"
-            android:textCursorDrawable="@null"/>
+            android:textCursorDrawable="@null">
+            <requestFocus></requestFocus>
+        </EditText>
 
         <ImageButton
             android:id="@+id/ib_cancel"
@@ -121,7 +90,8 @@
             android:layout_height="48dp"
             android:layout_centerVertical="true"
             android:layout_toRightOf="@+id/tv_tag"
-            android:background="@null"/>
+            android:background="@null"
+            android:src="@drawable/create_imoji_input_clear"/>
 
     </LinearLayout>
 
@@ -130,7 +100,6 @@
         android:id="@+id/scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/tv_public_is_good"
         android:layout_below="@id/tag_editor"
         android:layout_marginLeft="25dp"
         android:layout_marginRight="25dp"
@@ -147,28 +116,12 @@
             android:orientation="horizontal"></com.imojiapp.imoji.sdk.ui.widgets.AutoFitGridLayout>
     </ScrollView>
 
-
-    <TextView
-        android:id="@+id/tv_public_is_good"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="40dp"
-        android:gravity="center"
-        android:lines="2"
-        android:paddingLeft="30dp"
-        android:paddingRight="30dp"
-
-        android:textColor="@android:color/white"
-        android:textSize="18sp"/>
-    <!--android:text="@string/make_imoji_public"-->
-
-    <Button
-        android:layout_alignParentBottom="true"
-        android:id="@+id/bt_upload"
-        android:text="@string/upload"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"/>
-
+    <ProgressBar
+        android:layout_centerInParent="true"
+        android:visibility="gone"
+        android:progressTint="?colorAccent"
+        android:id="@+id/imoji_progress"
+        android:indeterminate="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 </RelativeLayout>

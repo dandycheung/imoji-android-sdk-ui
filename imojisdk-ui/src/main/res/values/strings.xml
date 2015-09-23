@@ -4,4 +4,6 @@
     <string name="str_public">Public</string>
     <string name="string_private">Private</string>
     <string name="upload">Upload</string>
+    <string name="tag">Tag</string>
+    <string name="add_tags">add tags</string>
 </resources>

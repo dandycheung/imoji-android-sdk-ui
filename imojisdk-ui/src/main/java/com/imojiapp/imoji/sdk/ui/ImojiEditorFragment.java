@@ -2,19 +2,23 @@ package com.imojiapp.imoji.sdk.ui;
 
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
 
-import com.imojiapp.imoji.sdk.ui.utils.BitmapUtils;
+import com.imojiapp.imoji.sdk.BitmapUtils;
 import com.imojiapp.imojigraphics.IGEditorView;
 
 import java.lang.ref.WeakReference;
@@ -24,7 +28,6 @@ import java.lang.ref.WeakReference;
  */
 public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.OnGlobalLayoutListener{
     public static final String FRAGMENT_TAG = ImojiEditorFragment.class.getSimpleName();
-
     private Bitmap mPreScaleBitmap;
     private Bitmap mPostScaleBitmap;
     private IGEditorView mIGEditorView;
@@ -79,11 +82,12 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
 
     }
 
-
     @Override
     public void onViewCreated(View v, Bundle savedInstanceState) {
         mIGEditorView = (IGEditorView) v.findViewById(R.id.imoji_editor_view);
         mIGEditorView.setZoomInOnAspectFit(false);
+
+
         ImageButton undoButton = (ImageButton) v.findViewById(R.id.imoji_ib_undo);
         undoButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -100,7 +104,7 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
             public void onClick(View v) {
                 if (mIGEditorView.isImojiReady()) {
                     mIsTagging = true;
-                    mIGEditorView.getTrimmedOutputBitmap(new IGEditorView.OnBitmapReady() {
+                    mIGEditorView.getTrimmedOutputBitmap(new IGEditorView.BitmapListener() {
                         @Override
                         public void onBitmapOutputReady(Bitmap bitmap) {
                             if (isAdded()) {

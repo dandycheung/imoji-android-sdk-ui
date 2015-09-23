@@ -25,6 +25,7 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.imojiapp.imoji.sdk.ImojiApi;
 import com.imojiapp.imoji.sdk.ui.utils.BitmapUtils;
 import com.imojiapp.imojigraphics.IG;
 
@@ -179,6 +180,7 @@ public class TagImojiFragment extends Fragment {
         mPublicCb.setOnCheckedChangeListener(mOnCheckedChangeListener);
         mTaggerEt = (EditText) v.findViewById(R.id.et_tag);
         mTaggerEt.setOnEditorActionListener(mKeyActionListener);
+        mUploadButton = (Button) v.findViewById(R.id.bt_upload);
         mUploadButton.setOnClickListener(mOnDoneClickListener);
 
 
@@ -334,6 +336,8 @@ public class TagImojiFragment extends Fragment {
         @Override
         public void onClick(View v) {
             mIsProcessing = true;
+
+            ImojiApi.with(getActivity()).
 
             //upload the image and the original
 

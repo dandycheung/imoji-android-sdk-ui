@@ -24,16 +24,15 @@ Now that you have integrated the SDK, you can use the imoji creator in your app.
 1. Create a `Bitmap` of the image you would like to convert into an imoji.
 
 2. Put the `Bitmap` into the EditorBitmapCache using the `EditorBitmapCache.Keys.INPUT_BITMAP` cache key.
-```java
-EditorBitmapCache.getInstance().put(EditorBitmapCache.Keys.INPUT_BITMAP, bitmap);
-```
+ ```java
+ EditorBitmapCache.getInstance().put(EditorBitmapCache.Keys.INPUT_BITMAP, bitmap);
+ ```
 
 3. Launch the `ImojiEditorActivity` using the `START_EDITOR_REQUEST_CODE`
-```java
-Intent intent = new Intent(this, ImojiEditorActivity.class);
-startActivityForResult(intent, ImojiEditorActivity.START_EDITOR_REQUEST_CODE);
-```
-
+ ```java
+ Intent intent = new Intent(this, ImojiEditorActivity.class);
+ startActivityForResult(intent, ImojiEditorActivity.START_EDITOR_REQUEST_CODE);
+ ```
 4. Override `onActivityResult` in your Activity. If the Activity result was `RESULT_OK`, you can obtained the outlined imoji bitmap from the `EditorBitmapCache` using the `EditorBitmapCache.Keys.OUTLINED_BITMAP` cache key.
 ```java
 @Override

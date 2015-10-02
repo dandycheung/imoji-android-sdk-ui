@@ -1,7 +1,9 @@
 package com.imojiapp.imoji.sdk.ui;
 
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -11,8 +13,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -41,6 +45,7 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
     private Handler mHandler = new Handler();
     private ImageButton mUndoButton;
     private ImageButton mTagButton;
+    private Toolbar mToolbar;
 
     @Override
     public void onAttach(Context context) {
@@ -73,22 +78,29 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
     }
 
     @Override
-    public void onGlobalLayout() {
-        if (Build.VERSION.SDK_INT >= 16) {
-            getView().getViewTreeObserver().removeOnGlobalLayoutListener(this);
-        } else {
-            getView().getViewTreeObserver().removeGlobalOnLayoutListener(this);
-        }
-
-        mWidthBound = getView().getWidth();
-        mHeightBound = getView().getHeight();
-
-        launchBitmapScaleTask();
-
-    }
-
-    @Override
     public void onViewCreated(View v, Bundle savedInstanceState) {
+
+        mToolbar = (Toolbar) v.findViewById(R.id.imoji_toolbar);
+        mToolbar.setNavigationIcon(R.drawable.create_back);
+        mToolbar.inflateMenu(R.menu.menu_imoji_editor_fragment);
+        mToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                if (item.getItemId() == R.id.imoji_mi_editor_help) {
+                    return true;
+                }
+                return false;
+            }
+        });
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isAdded()) {
+                    getActivity().setResult(Activity.RESULT_CANCELED);
+                    getActivity().finish();
+                }
+            }
+        });
 
         mUndoButton = (ImageButton) v.findViewById(R.id.imoji_ib_undo);
         mUndoButton.setVisibility(View.GONE);
@@ -134,16 +146,15 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
 
         mIGEditorView = (IGEditorView) v.findViewById(R.id.imoji_editor_view);
         initEditor(savedInstanceState);
-
     }
 
     private void initEditor(Bundle savedInstanceState) {
 
         TypedArray typedArray = getContext().obtainStyledAttributes(new int[]{android.R.attr.windowBackground});
         int windowBackground = typedArray.getColor(0, Color.BLACK);
+        typedArray.recycle();
         mIGEditorView.setGLBackgroundColor(windowBackground);
-        mIGEditorView.setZoomInOnAspectFit(false);
-        mIGEditorView.setImageAlpha(200);
+        mIGEditorView.setImageAlpha(225);
 
         mIGEditorView.setStateListener(new IGEditorView.StateListener() {
             @Override
@@ -161,7 +172,7 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
                         mTagButton.setVisibility(View.VISIBLE);
                         break;
                 }
-                Log.d(LOG_TAG, "state changed to: " + igEditorState + " subState: " + igEditorSubstate);
+//                Log.d(LOG_TAG, "state changed to: " + igEditorState + " subState: " + igEditorSubstate);
             }
         });
 
@@ -179,6 +190,21 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
         if (savedInstanceState != null) {
             mPreScaleBitmap = mBitmapRetainerFragment.mPreScaledBitmap;
         }
+    }
+
+    @Override
+    public void onGlobalLayout() {
+        if (Build.VERSION.SDK_INT >= 16) {
+            getView().getViewTreeObserver().removeOnGlobalLayoutListener(this);
+        } else {
+            getView().getViewTreeObserver().removeGlobalOnLayoutListener(this);
+        }
+
+        mWidthBound = getView().getWidth();
+        mHeightBound = getView().getHeight();
+
+        launchBitmapScaleTask();
+
     }
 
 
@@ -237,10 +263,10 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
         protected void onPostExecute(Bitmap bitmap) {
             ImojiEditorFragment f = mFragmentWeakReference.get();
             if (f != null && f.mIGEditorView != null) {
-//                ViewGroup.LayoutParams params = f.mIGEditorView.getLayoutParams();
-//                params.width = bitmap.getWidth();
-//                params.height = bitmap.getHeight();
-//                f.mIGEditorView.setLayoutParams(params);
+                ViewGroup.LayoutParams params = f.mIGEditorView.getLayoutParams();
+                params.width = bitmap.getWidth();
+                params.height = bitmap.getHeight();
+                f.mIGEditorView.setLayoutParams(params);
                 f.mIGEditorView.setInputBitmap(bitmap);
             }
         }

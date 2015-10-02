@@ -4,6 +4,7 @@ package com.imojiapp.imoji.sdk.ui;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -14,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -54,6 +56,7 @@ public class TagImojiFragment extends Fragment {
     private static final String LOG_TAG = TagImojiFragment.class.getSimpleName();
     private static final String TAGS_BUNDLE_ARG_KEY = "TAGS_BUNDLE_ARG_KEY";
 
+    Toolbar mToolbar;
     TextView mTitleTv;
     ImageView mImojiIv;
     GridLayout mTagGrid;
@@ -70,6 +73,7 @@ public class TagImojiFragment extends Fragment {
     private boolean mIsDone;
 
     private ImojiEditorFragment.BitmapRetainerFragment mBitmapRetainerFragment;
+    private InputMethodManager mInputMethodManager;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -96,6 +100,18 @@ public class TagImojiFragment extends Fragment {
         mUploadButton = (ImageButton) v.findViewById(R.id.ib_upload);
         mUploadButton.setOnClickListener(mOnDoneClickListener);
         mProgress = (ProgressBar) v.findViewById(R.id.imoji_progress);
+        mToolbar = (Toolbar) v.findViewById(R.id.imoji_toolbar);
+        mToolbar.setNavigationIcon(R.drawable.create_back);
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isResumed()) {
+                    getFragmentManager().popBackStack();
+                    mInputMethodManager.hideSoftInputFromWindow(mTaggerEt.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+
+                }
+            }
+        });
 
         if (savedInstanceState != null) {
             List<String> tags = savedInstanceState.getStringArrayList(TAGS_BUNDLE_ARG_KEY);
@@ -104,15 +120,15 @@ public class TagImojiFragment extends Fragment {
             }
         }
 
-        //show keyboard
-        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.showSoftInput(mTaggerEt, InputMethodManager.SHOW_IMPLICIT);
-
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        //show keyboard
+        mInputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        mInputMethodManager.showSoftInput(mTaggerEt, InputMethodManager.SHOW_IMPLICIT);
+
         mBitmapRetainerFragment = (ImojiEditorFragment.BitmapRetainerFragment) getFragmentManager().findFragmentByTag(ImojiEditorFragment.BitmapRetainerFragment.FRAGMENT_TAG);
         if (mBitmapRetainerFragment == null || mBitmapRetainerFragment.mTrimmedBitmap == null) {
             getFragmentManager().popBackStack();
@@ -211,7 +227,10 @@ public class TagImojiFragment extends Fragment {
     public Drawable createTagDrawable() {
 
         GradientDrawable d = new GradientDrawable();
-        d.setColor(0xB3FFFFFF & getResources().getColor(R.color.colorAccent));
+        TypedArray a = getActivity().getTheme().obtainStyledAttributes(new int[]{R.attr.colorAccent});
+        final int accentColor = a.getColor(0, Color.WHITE);
+        a.recycle();
+        d.setColor(0xB3FFFFFF & accentColor);
         d.setCornerRadius(getResources().getDimension(R.dimen.dim_8dp));
         d.setShape(GradientDrawable.RECTANGLE);
 
@@ -220,7 +239,7 @@ public class TagImojiFragment extends Fragment {
         d1.setStroke((int)getResources().getDimension(R.dimen.dim_0_5dp), 0x66FFFFFF & Color.BLACK);
 
         GradientDrawable d2 = new GradientDrawable();
-        d2.setStroke((int) getResources().getDimension(R.dimen.dim_1dp), getResources().getColor(R.color.colorAccent));
+        d2.setStroke((int) getResources().getDimension(R.dimen.dim_1dp), accentColor);
         d2.setCornerRadius(getResources().getDimension(R.dimen.dim_8dp));
 
         LayerDrawable layer = new LayerDrawable(new Drawable[]{d, d2, d1});

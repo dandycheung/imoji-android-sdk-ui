@@ -1,18 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:background="?android:windowBackground"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:background="?android:windowBackground">
+
+    <android.support.v7.widget.Toolbar
+        android:theme="?imoji__editorToolbarTheme"
+        android:background="?colorPrimary"
+        android:id="@+id/imoji_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize">
+
+        <TextView
+            android:theme="@style/TextAppearance.Widget.AppCompat.Toolbar.Title"
+            android:textAppearance="?titleTextStyle"
+            android:layout_gravity="center"
+            android:text="@string/trace"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </android.support.v7.widget.Toolbar>
 
     <com.imojiapp.imojigraphics.IGEditorView
+        android:layout_below="@+id/imoji_toolbar"
         android:id="@+id/imoji_editor_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
 
-
     <ImageButton
-        android:tint="?colorAccent"
         android:id="@+id/imoji_ib_undo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -20,21 +35,22 @@
         android:layout_marginBottom="28dp"
         android:layout_marginLeft="21dp"
         android:background="?selectableItemBackground"
-        android:src="@drawable/create_trace_undo"/>
+        android:src="@drawable/create_trace_undo"
+        android:tint="?colorAccent"/>
 
 
     <ImageButton
-        android:tint="?colorAccent"
         android:id="@+id/imoji_ib_tag"
         android:layout_width="wrap_content"
-        android:src="@drawable/create_trace_proceed"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_marginBottom="28dp"
         android:layout_marginRight="21dp"
         android:background="?selectableItemBackground"
-        android:text="@string/continue_camel"/>
+        android:src="@drawable/create_trace_proceed"
+        android:text="@string/continue_camel"
+        android:tint="?colorAccent"/>
 
 
     <FrameLayout

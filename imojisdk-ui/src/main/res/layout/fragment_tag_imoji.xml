@@ -7,14 +7,16 @@
     android:background="?android:windowBackground"
     tools:context="com.imojiapp.imoji.fragments.imoji.TagImojiFragment">
 
-    <android.widget.Toolbar
+    <android.support.v7.widget.Toolbar
         android:id="@+id/imoji_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
         android:background="?colorPrimary"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+        android:theme="?imoji__editorToolbarTheme">
 
         <TextView
+            android:theme="@style/TextAppearance.Widget.AppCompat.Toolbar.Title"
+            android:textAppearance="?titleTextStyle"
             android:gravity="center"
             android:layout_gravity="center"
             android:layout_width="wrap_content"
@@ -29,7 +31,7 @@
             android:id="@+id/ib_upload"
             android:layout_width="48dp"
             android:layout_height="48dp"/>
-    </android.widget.Toolbar>
+    </android.support.v7.widget.Toolbar>
 
     <RelativeLayout
         android:id="@+id/tag_container"

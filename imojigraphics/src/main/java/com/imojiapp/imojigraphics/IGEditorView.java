@@ -32,6 +32,7 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
     private boolean zoomInOnAspectFit;
     private float density = 1.f;
     private Queue<Runnable> mGLQueue = new ConcurrentLinkedQueue<>();
+    private Queue<Runnable> mEditorIndependentGLQueue = new ConcurrentLinkedQueue<>();
     private StateListener stateListener = null;
     private int state = IG.EDITOR_DRAW, substate = IG.EDITOR_IDLE;
 
@@ -74,13 +75,19 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        while (!mGLQueue.isEmpty()) {
-            mGLQueue.poll().run();
-        }
 
         gl.glViewport(0, 0, surfaceWidth, surfaceHeight);
 
+        while (!mEditorIndependentGLQueue.isEmpty()) {
+            mEditorIndependentGLQueue.poll().run();
+        }
+
         if (igEditor != 0) {
+
+            while (!mGLQueue.isEmpty()) {
+                mGLQueue.poll().run();
+            }
+
             IG.EditorDisplay(igEditor);
         }
     }
@@ -250,7 +257,7 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
     public void setInputBitmap(final Bitmap inputBitmap) {
         this.inputBitmap = inputBitmap;
 
-        mGLQueue.add(new Runnable() {
+        mEditorIndependentGLQueue.add(new Runnable() {
             @Override
             public void run() {
                 resetEditor();
@@ -351,32 +358,65 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
         }
     }
 
-    public void setGLBackgroundColor(int color) {
-        IG.EditorSetBackgroundColor(igEditor, Color.red(color), Color.green(color), Color.blue(color), Color.alpha(color));
+    public void setGLBackgroundColor(final int color) {
+        mGLQueue.add(new Runnable() {
+            @Override
+            public void run() {
+                IG.EditorSetBackgroundColor(igEditor, Color.red(color), Color.green(color), Color.blue(color), Color.alpha(color));
+            }
+        });
     }
 
-    public void setStrokeColor(int color) {
-        IG.EditorSetStrokeColor(igEditor, Color.red(color), Color.green(color), Color.blue(color), Color.alpha(color));
+    public void setStrokeColor(final int color) {
+        mGLQueue.add(new Runnable() {
+            @Override
+            public void run() {
+                IG.EditorSetStrokeColor(igEditor, Color.red(color), Color.green(color), Color.blue(color), Color.alpha(color));
+            }
+        });
+
     }
 
-    public void setDotColor(int color) {
-        IG.EditorSetDotColor(igEditor, Color.red(color), Color.green(color), Color.blue(color), Color.alpha(color));
+    public void setDotColor(final int color) {
+        mGLQueue.add(new Runnable() {
+            @Override
+            public void run() {
+                IG.EditorSetDotColor(igEditor, Color.red(color), Color.green(color), Color.blue(color), Color.alpha(color));
+            }
+        });
+
     }
 
-    public void setStrokeWidth(float width) {
-        IG.EditorSetStrokeWidth(igEditor, width);
+    public void setStrokeWidth(final float width) {
+        mGLQueue.add(new Runnable() {
+            @Override
+            public void run() {
+                IG.EditorSetStrokeWidth(igEditor, width);
+            }
+        });
     }
 
-    public void setImageAlpha(int alpha) {
-        IG.EditorSetImageAlpha(igEditor, alpha);
+    public void setImageAlpha(final int alpha) {
+
+        mGLQueue.add(new Runnable() {
+            @Override
+            public void run() {
+                IG.EditorSetImageAlpha(igEditor, alpha);
+            }
+        });
     }
 
     public byte[] serialize() {
         return IG.EditorSerialize(igEditor);
     }
 
-    public void deserialize(byte[] data) {
-        IG.EditorDeserialize(igEditor, data);
+    public void deserialize(final byte[] data) {
+        mGLQueue.add(new Runnable() {
+            @Override
+            public void run() {
+                IG.EditorDeserialize(igEditor, data);
+            }
+        });
     }
 
     public boolean isZoomInOnAspectFit() {

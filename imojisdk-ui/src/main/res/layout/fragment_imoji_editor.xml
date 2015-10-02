@@ -12,6 +12,7 @@
 
 
     <ImageButton
+        android:tint="?colorAccent"
         android:id="@+id/imoji_ib_undo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -23,6 +24,7 @@
 
 
     <ImageButton
+        android:tint="?colorAccent"
         android:id="@+id/imoji_ib_tag"
         android:layout_width="wrap_content"
         android:src="@drawable/create_trace_proceed"

@@ -1,4 +1,6 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
 repositories{
     maven{
@@ -28,9 +30,78 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.0.1'
-    compile ('com.imojiapp:imoji-sdk:0.6.0.1-SNAPSHOT@aar'){
+    compile ('com.imojiapp:imoji-sdk:+@aar'){
         transitive=true
         exclude group: 'com.koushikdutta.ion'
     }
     compile project(':imojigraphics')
+}
+
+ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
+signing {
+    required { isReleaseVersion && gradle.taskGraph.hasTask("uploadArchives") }
+    sign configurations.archives
+}
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+uploadArchives {
+    repositories.mavenDeployer {
+        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+        repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2") {
+            authentication(userName: ossrhUsername, password: ossrhPassword)
+        }
+
+        snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
+            authentication(userName: ossrhUsername, password: ossrhPassword)
+        }
+
+        pom.project {
+            groupId 'com.imojiapp'
+            artifactId 'imoji-sdk-ui'
+            version android.defaultConfig.versionName
+            name 'com.imojiapp:imoji-sdk-ui'
+            description 'Integrate millions of stickers into your Android application'
+            url 'http://imoji.io/sdk'
+            licenses {
+                license {
+                    name 'MIT License'
+                    url 'https://raw.githubusercontent.com/imojiengineering/imoji-android-sdk-ui/master/LICENSE.md'
+                    distribution 'repo'
+                }
+            }
+            developers {
+                developer {
+                    name 'Sajjad Tabib'
+                    email 'sajjad@imojiapp.com'
+                    organization 'Builds, Inc'
+                    organizationUrl 'http://imoji.io'
+                }
+            }
+            scm {
+                connection 'scm:git:git@github.com:imojiengineering/imoji-android-sdk-ui.git'
+                developerConnection 'scm:git:git@github.com:imojiengineering/imoji-android-sdk-ui.git'
+                url 'git@github.com:imojiengineering/imoji-android-sdk-ui.git'
+            }
+        }
+    }
 }

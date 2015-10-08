@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
+import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -62,6 +63,7 @@ public class TagImojiFragment extends Fragment {
     EditText mTaggerEt;
     ImageButton mUploadButton;
     ProgressBar mProgress;
+    ImageButton mClearInputBt;
 
 
     View mTagEditor;
@@ -132,6 +134,16 @@ public class TagImojiFragment extends Fragment {
                     getFragmentManager().popBackStack();
                     mInputMethodManager.hideSoftInputFromWindow(mTaggerEt.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 
+                }
+            }
+        });
+
+        mClearInputBt = (ImageButton) v.findViewById(R.id.ib_cancel);
+        mClearInputBt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mTaggerEt != null) {
+                    mTaggerEt.getText().clear();
                 }
             }
         });

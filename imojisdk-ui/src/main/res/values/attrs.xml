@@ -7,7 +7,7 @@
     <declare-styleable name="ImojiCheckeredView">
         <attr name="imoji__firstCheckerColor" format="color"></attr>
         <attr name="imoji__secondCheckerColor" format="color"/>
-        <attr name="imoji__checkerSize" format="integer"/>
+        <attr name="imoji__checkerSize" format="dimension"/>
     </declare-styleable>
 
     <declare-styleable name="DotDotView">

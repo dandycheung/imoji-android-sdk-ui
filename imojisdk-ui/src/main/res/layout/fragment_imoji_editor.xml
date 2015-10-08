@@ -6,11 +6,14 @@
                 android:background="?android:windowBackground">
 
 
+
+    <!-- Don't include for now, need to make this happen in GL -->
     <!--<com.imojiapp.imoji.sdk.ui.view.CheckeredView-->
         <!--android:layout_width="match_parent"-->
         <!--android:layout_height="match_parent"-->
         <!--app:imoji__firstCheckerColor="?colorPrimary"-->
-        <!--app:imoji__secondCheckerColor="?colorPrimaryDark"/>-->
+        <!--app:imoji__secondCheckerColor="?colorPrimaryDark"-->
+        <!--app:imoji__checkerSize="8dp"/>-->
 
     <com.imojiapp.imojigraphics.IGEditorView
         android:id="@+id/imoji_editor_view"

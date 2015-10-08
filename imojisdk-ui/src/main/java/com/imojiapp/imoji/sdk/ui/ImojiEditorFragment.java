@@ -87,7 +87,7 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
                 if (item.getItemId() == R.id.imoji_mi_editor_help) {
                     if (isResumed()) {
                         TipsFragment f = TipsFragment.newInstance();
-                        getFragmentManager().beginTransaction().addToBackStack(null).replace(R.id.imoji_tag_container, f).commit();
+                        getFragmentManager().beginTransaction().addToBackStack(null).setCustomAnimations(R.anim.abc_fade_in, -1, -1, R.anim.imoji_fade_out).add(R.id.imoji_tag_container, f).commit();
                     }
                     return true;
                 }

@@ -23,7 +23,7 @@
             android:layout_marginTop="16dp"
             android:id="@+id/imoji_dot_dot_view"
             android:layout_width="match_parent"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="24dp"
             android:layout_height="wrap_content"
             app:num_dots="3"/>
 

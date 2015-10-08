@@ -1,7 +1,6 @@
 package com.imojiapp.imoji.sdk.ui;
 
 
-import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -10,13 +9,10 @@ import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.imojiapp.imoji.sdk.ui.utils.DisplayUtils;
 import com.imojiapp.imoji.sdk.ui.view.DotDotView;
 
 
@@ -28,6 +24,9 @@ public class TipsFragment extends android.support.v4.app.Fragment {
 
     public static final String FRAGMENT_TAG = TipsFragment.class.getSimpleName();
     private static final String LOG_TAG = TipsFragment.class.getSimpleName();
+    View mBottomLayout;
+    ImageButton mAdvanceBt;
+    DotDotView mDotDotView;
     private ViewPager mPager;
 
     public static TipsFragment newInstance() {
@@ -39,58 +38,12 @@ public class TipsFragment extends android.support.v4.app.Fragment {
         return f;
     }
 
-    View mBottomLayout;
-    ImageButton mAdvanceBt;
-    DotDotView mDotDotView;
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_tips, container, false);
     }
-
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        mPager = (ViewPager) view.findViewById(R.id.imoji_viewpager);
-        mPager.setAdapter(new HintPagerAdapter(getFragmentManager()));
-        mBottomLayout =  view.findViewById(R.id.imoji_hint_bottom_bar);
-        mAdvanceBt = (ImageButton) view.findViewById(R.id.imoji_ib_tips_proceed);
-        mDotDotView = (DotDotView) view.findViewById(R.id.imoji_dot_dot_view);
-
-        Point size = DisplayUtils.getWindowSize(getActivity());
-
-//        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) mBottomLayout.getLayoutParams();
-//        params.height = (int) (size.y * 0.20);
-//        mBottomLayout.setLayoutParams(params);
-//
-//        params = (ViewGroup.MarginLayoutParams) mAdvanceBt.getLayoutParams();
-//        params.bottomMargin = (int) (size.y * 0.06f * 0.72f);
-//        mAdvanceBt.setLayoutParams(params);
-
-        mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-                if (mDotDotView != null) {
-                    mDotDotView.setIndex(position);
-                }
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-
-            }
-        });
-
-
-
-    }
-
 
     public static class HintPageFragment extends android.support.v4.app.Fragment {
 
@@ -100,6 +53,10 @@ public class TipsFragment extends android.support.v4.app.Fragment {
         public static final String DETAIL_BUNDLE_ARG_KEY = "DETAIL_BUNDLE_ARG_KEY";
         public static final String FRAGMENT_TAG = HintPageFragment.class.getSimpleName();
         private static final String LOG_TAG = HintPageFragment.class.getSimpleName();
+        ImageView mImageView;
+        TextView mTitleTv;
+        TextView mDetailTv;
+        CardView mCardView;
 
         public static HintPageFragment newInstance(int drawableResource, int titleResourceId, int detailResourceId) {
             HintPageFragment f = new HintPageFragment();
@@ -112,11 +69,6 @@ public class TipsFragment extends android.support.v4.app.Fragment {
 
             return f;
         }
-
-        ImageView mImageView;
-        TextView mTitleTv;
-        TextView mDetailTv;
-        CardView mCardView;
 
 
         @Override
@@ -136,24 +88,59 @@ public class TipsFragment extends android.support.v4.app.Fragment {
             mImageView.setImageResource(getArguments().getInt(DRAWABLE_RESOURCE_BUNDLE_ARG_KEY));
             mTitleTv.setText(getArguments().getInt(TITLE_BUNDLE_ARG_KEY));
             mDetailTv.setText(getArguments().getInt(DETAIL_BUNDLE_ARG_KEY));
-            Point size = DisplayUtils.getWindowSize(getActivity());
-//            ViewGroup.LayoutParams params = mCardView.getLayoutParams();
-//            params.width = (int) (size.x * 0.72);
-//            params.height = (int) (size.y * 0.615);
-//            mCardView.setLayoutParams(params);
-
-//            int padding = (int) (size.y * 0.72f * 0.152f * 0.34f) / 2;
-//            mTitleTv.setTextSize((size.y * 0.72f * 0.152f * 0.27f) / 2);
-//            mTitleTv.setPadding(padding, 0, padding, 0);
-
-//            padding = (int) (size.y * 0.72f * 0.189f * 0.27f) / 2;
-//            mDetailTv.setTextSize((size.y * 0.72f * 0.189f * 0.22f) / 2);
-//            mDetailTv.setPadding(padding, 0, padding, 0);
-
-            ViewGroup.MarginLayoutParams marginLayoutParams = (ViewGroup.MarginLayoutParams) mCardView.getLayoutParams();
-            marginLayoutParams.bottomMargin = (int) (size.y * 0.07);
-            mCardView.setLayoutParams(marginLayoutParams);
         }
+    }    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        mPager = (ViewPager) view.findViewById(R.id.imoji_viewpager);
+        mPager.setAdapter(new HintPagerAdapter(getChildFragmentManager()));
+        mBottomLayout = view.findViewById(R.id.imoji_hint_bottom_bar);
+        mAdvanceBt = (ImageButton) view.findViewById(R.id.imoji_ib_tips_proceed);
+        mDotDotView = (DotDotView) view.findViewById(R.id.imoji_dot_dot_view);
+
+        mAdvanceBt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int numHintCards = mPager.getAdapter().getCount();
+                int currentIndex = mPager.getCurrentItem();
+
+                if (currentIndex == numHintCards - 1) {
+                    if (isResumed()) {
+                        getActivity().getSupportFragmentManager().popBackStack();
+                    }
+                    return;
+                }
+
+                mPager.setCurrentItem((numHintCards - 1 > currentIndex) ? ++currentIndex : currentIndex, true);
+
+            }
+        });
+
+        mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (mDotDotView != null) {
+                    mDotDotView.setIndex(position);
+                }
+
+                if (position == mPager.getAdapter().getCount() - 1) {
+                    mAdvanceBt.setImageResource(R.drawable.create_tips_done);
+                } else {
+                    mAdvanceBt.setImageResource(R.drawable.create_tips_proceed);
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
+
     }
 
     private class HintPagerAdapter extends FragmentPagerAdapter {
@@ -192,4 +179,6 @@ public class TipsFragment extends android.support.v4.app.Fragment {
             return 3;
         }
     }
+
+
 }

@@ -3,27 +3,26 @@ package com.imojiapp.imoji.sdk.ui;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
 
 import com.imojiapp.imoji.sdk.BitmapUtils;
+import com.imojiapp.imoji.sdk.ui.utils.ScrimUtil;
 import com.imojiapp.imojigraphics.IG;
 import com.imojiapp.imojigraphics.IGEditorView;
 
@@ -46,11 +45,9 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
     private ImageButton mUndoButton;
     private ImageButton mTagButton;
     private Toolbar mToolbar;
+    private View mToolbarScrim;
+    private View mBottomBarScrim;
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -80,6 +77,7 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
     @Override
     public void onViewCreated(View v, Bundle savedInstanceState) {
 
+        //configure the toolbar
         mToolbar = (Toolbar) v.findViewById(R.id.imoji_toolbar);
         mToolbar.setNavigationIcon(R.drawable.create_back);
         mToolbar.inflateMenu(R.menu.menu_imoji_editor_fragment);
@@ -87,6 +85,10 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 if (item.getItemId() == R.id.imoji_mi_editor_help) {
+                    if (isResumed()) {
+                        TipsFragment f = TipsFragment.newInstance();
+                        getFragmentManager().beginTransaction().addToBackStack(null).replace(R.id.imoji_tag_container, f).commit();
+                    }
                     return true;
                 }
                 return false;
@@ -101,6 +103,19 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
                 }
             }
         });
+
+        mToolbarScrim = v.findViewById(R.id.imoji_toolbar_scrim);
+        mBottomBarScrim = v.findViewById(R.id.imoji_bottom_bar_scrim);
+
+        Drawable scrim = ScrimUtil.makeCubicGradientScrimDrawable(0x66000000, 32, Gravity.TOP);
+        Drawable bottomBarScrim = ScrimUtil.makeCubicGradientScrimDrawable(0x66000000, 32, Gravity.BOTTOM);
+        if (Build.VERSION.SDK_INT >= 16) {
+            mToolbarScrim.setBackground(scrim);
+            mBottomBarScrim.setBackground(bottomBarScrim);
+        } else {
+            mToolbarScrim.setBackgroundDrawable(scrim);
+            mBottomBarScrim.setBackgroundDrawable(bottomBarScrim);
+        }
 
         mUndoButton = (ImageButton) v.findViewById(R.id.imoji_ib_undo);
         mUndoButton.setVisibility(View.GONE);
@@ -150,10 +165,12 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
 
     private void initEditor(Bundle savedInstanceState) {
 
-        TypedArray typedArray = getContext().obtainStyledAttributes(new int[]{android.R.attr.windowBackground});
+        TypedArray typedArray = getActivity().obtainStyledAttributes(new int[]{android.R.attr.windowBackground});
         int windowBackground = typedArray.getColor(0, Color.BLACK);
         typedArray.recycle();
         mIGEditorView.setGLBackgroundColor(windowBackground);
+//        mIGEditorView.setGLBackgroundColor(Color.parseColor("#00000000"));
+        mIGEditorView.setBackgroundColor(Color.TRANSPARENT);
         mIGEditorView.setImageAlpha(225);
 
         mIGEditorView.setStateListener(new IGEditorView.StateListener() {
@@ -167,8 +184,10 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
                             mUndoButton.setVisibility(View.GONE);
                         }
                         mTagButton.setVisibility(View.GONE);
+                        mIGEditorView.setImageAlpha(225);
                         break;
                     case IG.EDITOR_NUDGE:
+                        mIGEditorView.setImageAlpha(0x66);
                         mTagButton.setVisibility(View.VISIBLE);
                         break;
                 }
@@ -243,6 +262,36 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
         return bitmapRetainerFragment;
     }
 
+    private void hideSystemUiVisibility() {
+        if (Build.VERSION.SDK_INT >= 19) {
+            final View decorView = getActivity().getWindow().getDecorView();
+            int uiOptions =
+                    View.SYSTEM_UI_FLAG_FULLSCREEN
+//                                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            decorView.setSystemUiVisibility(uiOptions);
+            decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+                @Override
+                public void onSystemUiVisibilityChange(int flags) {
+                    if ((flags & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                        decorView.setSystemUiVisibility(
+                                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                        | View.SYSTEM_UI_FLAG_FULLSCREEN
+                                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                    }
+                }
+            });
+
+
+        }
+    }
+
 
     static class BitmapScaleAsyncTask extends AsyncTask<BitmapScaleAsyncTask.Params, Void, Bitmap> {
 
@@ -263,10 +312,10 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
         protected void onPostExecute(Bitmap bitmap) {
             ImojiEditorFragment f = mFragmentWeakReference.get();
             if (f != null && f.mIGEditorView != null) {
-                ViewGroup.LayoutParams params = f.mIGEditorView.getLayoutParams();
-                params.width = bitmap.getWidth();
-                params.height = bitmap.getHeight();
-                f.mIGEditorView.setLayoutParams(params);
+//                ViewGroup.LayoutParams params = f.mIGEditorView.getLayoutParams();
+//                params.width = bitmap.getWidth();
+//                params.height = bitmap.getHeight();
+//                f.mIGEditorView.setLayoutParams(params);
                 f.mIGEditorView.setInputBitmap(bitmap);
             }
         }

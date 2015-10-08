@@ -16,7 +16,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,9 +24,6 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.ImageButton;
@@ -41,11 +38,11 @@ import com.imojiapp.imoji.sdk.Callback;
 import com.imojiapp.imoji.sdk.Imoji;
 import com.imojiapp.imoji.sdk.ImojiApi;
 import com.imojiapp.imoji.sdk.ui.utils.EditorBitmapCache;
+import com.imojiapp.imoji.sdk.ui.utils.ScrimUtil;
 import com.imojiapp.imojigraphics.IG;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -74,6 +71,35 @@ public class TagImojiFragment extends Fragment {
 
     private ImojiEditorFragment.BitmapRetainerFragment mBitmapRetainerFragment;
     private InputMethodManager mInputMethodManager;
+    private EditText.OnEditorActionListener mKeyActionListener = new TextView.OnEditorActionListener() {
+        @Override
+        public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED) {
+                //get the text from the tag editor
+                String tag = ((TextView) mTagEditor.findViewById(R.id.et_tag)).getText().toString();
+                if (!tag.isEmpty()) {
+                    addTagChip(tag);
+                }
+                return true;
+            }
+
+            return true;
+        }
+    };
+    private View.OnClickListener mOnDoneClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+
+            if (isAdded() && !mIsProcessing) {
+                if (mProgress != null) {
+                    mProgress.setVisibility(View.VISIBLE);
+                }
+                mIsProcessing = true;
+                ImojiApi.with(getActivity()).createImoji(mBitmapRetainerFragment.mTrimmedBitmap, getTags(), new CreateCallback(getActivity()));
+            }
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -82,10 +108,7 @@ public class TagImojiFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-        // Inflate the layout for this fragment
-        final View v = inflater.inflate(R.layout.fragment_tag_imoji, container, false);
-        return v;
+        return inflater.inflate(R.layout.fragment_tag_imoji, container, false);
     }
 
     //
@@ -112,6 +135,14 @@ public class TagImojiFragment extends Fragment {
                 }
             }
         });
+
+
+        View toolbarScrim = v.findViewById(R.id.imoji_toolbar_scrim);
+        if (Build.VERSION.SDK_INT >= 16) {
+            toolbarScrim.setBackground(ScrimUtil.makeCubicGradientScrimDrawable(0x66000000, 8, Gravity.TOP));
+        } else {
+            toolbarScrim.setBackgroundDrawable(ScrimUtil.makeCubicGradientScrimDrawable(0x66000000, 8, Gravity.TOP));
+        }
 
         if (savedInstanceState != null) {
             List<String> tags = savedInstanceState.getStringArrayList(TAGS_BUNDLE_ARG_KEY);
@@ -160,23 +191,6 @@ public class TagImojiFragment extends Fragment {
         super.onSaveInstanceState(outState);
     }
 
-    private EditText.OnEditorActionListener mKeyActionListener = new TextView.OnEditorActionListener() {
-        @Override
-        public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-
-            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED) {
-                //get the text from the tag editor
-                String tag = ((TextView)mTagEditor.findViewById(R.id.et_tag)).getText().toString();
-                if (!tag.isEmpty()) {
-                    addTagChip(tag);
-                }
-                return true;
-            }
-
-            return true;
-        }
-    };
-
     private void addTagChip(String tag) {
         //create a view and add it to the gridview
         final View x = LayoutInflater.from(getActivity()).inflate(R.layout.tag_layout, mTagGrid, false);
@@ -186,8 +200,8 @@ public class TagImojiFragment extends Fragment {
             x.findViewById(R.id.tag_wrapper).setBackgroundDrawable(createTagDrawable());
         }
 
-        ((TextView)x.findViewById(R.id.tv_tag)).setText(tag);
-        ((TextView)x.findViewById(R.id.tv_tag)).setTextColor(Color.WHITE);
+        ((TextView) x.findViewById(R.id.tv_tag)).setText(tag);
+        ((TextView) x.findViewById(R.id.tv_tag)).setTextColor(Color.WHITE);
         (x.findViewById(R.id.ib_cancel)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -196,27 +210,13 @@ public class TagImojiFragment extends Fragment {
         });
 
         mTagGrid.addView(x, 0);
-        ((TextView)mTagEditor.findViewById(R.id.et_tag)).setText("");
+        ((TextView) mTagEditor.findViewById(R.id.et_tag)).setText("");
     }
-
-    private View.OnClickListener mOnDoneClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-
-            if (isAdded() && !mIsProcessing) {
-                if (mProgress != null) {
-                    mProgress.setVisibility(View.VISIBLE);
-                }
-                mIsProcessing = true;
-                ImojiApi.with(getActivity()).createImoji(mBitmapRetainerFragment.mTrimmedBitmap, getTags(), new CreateCallback(getActivity()));
-            }
-        }
-    };
 
     private ArrayList<String> getTags() {
         ArrayList<String> tags = new ArrayList<String>();
         int numTags = mTagGrid.getChildCount();
-        for(int i = 0; i < numTags; i++){
+        for (int i = 0; i < numTags; i++) {
             TextView tv = (TextView) mTagGrid.getChildAt(i).findViewById(R.id.tv_tag); //unsafe cast, wutever
             String tag = tv.getText().toString();
             tags.add(tag);
@@ -236,7 +236,7 @@ public class TagImojiFragment extends Fragment {
 
         GradientDrawable d1 = new GradientDrawable();
         d1.setCornerRadius(getResources().getDimension(R.dimen.dim_8dp));
-        d1.setStroke((int)getResources().getDimension(R.dimen.dim_0_5dp), 0x66FFFFFF & Color.BLACK);
+        d1.setStroke((int) getResources().getDimension(R.dimen.dim_0_5dp), 0x66FFFFFF & Color.BLACK);
 
         GradientDrawable d2 = new GradientDrawable();
         d2.setStroke((int) getResources().getDimension(R.dimen.dim_1dp), accentColor);

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="dotdotview_selected_color">#FFFFFF</color>
+    <color name="dotdotview_unselected_color">#66FFFFFF</color>
+    <color name="imoji_hint_text_color">#666666</color>
+</resources>

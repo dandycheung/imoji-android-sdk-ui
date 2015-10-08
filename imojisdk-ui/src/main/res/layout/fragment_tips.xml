@@ -1,0 +1,40 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#A0303030"
+                tools:context="com.imojiapp.imoji.sdk.ui.TipsFragment">
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/imoji_viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"></android.support.v4.view.ViewPager>
+
+    <LinearLayout
+        android:id="@+id/imoji_hint_bottom_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical">
+
+        <com.imojiapp.imoji.sdk.ui.view.DotDotView
+            android:layout_marginTop="16dp"
+            android:id="@+id/imoji_dot_dot_view"
+            android:layout_width="match_parent"
+            android:layout_marginBottom="16dp"
+            android:layout_height="wrap_content"
+            app:num_dots="3"/>
+
+        <ImageButton
+            android:id="@+id/imoji_ib_tips_proceed"
+            android:layout_width="56dp"
+            android:layout_marginBottom="24dp"
+            android:layout_height="56dp"
+            android:layout_gravity="center_horizontal|bottom"
+            android:background="?selectableItemBackground"
+            android:src="@drawable/create_tips_proceed"/>
+    </LinearLayout>
+
+</RelativeLayout>

@@ -5,4 +5,6 @@
     <dimen name="dim_1dp">1dp</dimen>
     <dimen name="dim_0_5dp" type="dimen">0.5dp</dimen>
     <dimen name="tag_title_text_size">24sp</dimen>
+    <dimen name="dot_dot_radius">7dp</dimen>
+    <dimen name="dot_dot_margin">9dp</dimen>
 </resources>

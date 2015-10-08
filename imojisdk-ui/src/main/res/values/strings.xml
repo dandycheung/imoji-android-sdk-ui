@@ -7,4 +7,15 @@
     <string name="tag">Tag</string>
     <string name="add_tags">add tags</string>
     <string name="trace">TRACE</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="imoji_hint_title_trace">Tips</string>
+    <string name="imoji_hint_title_push">You\'ve got a border now!</string>
+    <string name="imoji_hint_title_zoom">Pan and zoom with two fingers</string>
+    <string name="imoji_hint_detail_trace">Trace what you want your sticker to be</string>
+    <string name="imoji_hint_detail_push">Adjust the border by pushing it</string>
+    <string name="imoji_hint_detail_zoom">You can make more precise adjustments by zooming in</string>
+
+
+    <string name="imoji_tips">Tips</string>
 </resources>

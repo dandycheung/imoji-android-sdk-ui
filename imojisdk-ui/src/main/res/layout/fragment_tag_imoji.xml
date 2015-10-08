@@ -7,11 +7,15 @@
     android:background="?android:windowBackground"
     tools:context="com.imojiapp.imoji.fragments.imoji.TagImojiFragment">
 
+    <View
+        android:id="@+id/imoji_toolbar_scrim"
+        android:layout_width="match_parent"
+        android:layout_height="112dp"></View>
+
     <android.support.v7.widget.Toolbar
         android:id="@+id/imoji_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
-        android:background="?colorPrimary"
         android:theme="?imoji__editorToolbarTheme">
 
         <TextView

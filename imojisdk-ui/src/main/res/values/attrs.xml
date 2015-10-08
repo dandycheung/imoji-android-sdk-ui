@@ -3,4 +3,18 @@
     <declare-styleable name="ImojiEditor">
         <attr name="imoji__editorToolbarTheme" format="reference"></attr>
     </declare-styleable>
+
+    <declare-styleable name="ImojiCheckeredView">
+        <attr name="imoji__firstCheckerColor" format="color"></attr>
+        <attr name="imoji__secondCheckerColor" format="color"/>
+        <attr name="imoji__checkerSize" format="integer"/>
+    </declare-styleable>
+
+    <declare-styleable name="DotDotView">
+        <attr name="radius" format="dimension"></attr>
+        <attr name="dot_margin" format="dimension"></attr>
+        <attr name="num_dots" format="integer"></attr>
+        <attr name="selected_dot_color" format="color"></attr>
+        <attr name="unselected_dot_color" format="color"></attr>
+    </declare-styleable>
 </resources>

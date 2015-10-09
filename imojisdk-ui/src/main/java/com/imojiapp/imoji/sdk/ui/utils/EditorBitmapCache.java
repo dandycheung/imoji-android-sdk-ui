@@ -6,7 +6,7 @@ import android.util.LruCache;
 /**
  * Created by sajjadtabib on 9/23/15.
  */
-public final class EditorBitmapCache extends LruCache<String, Bitmap> {
+public final class EditorBitmapCache extends android.support.v4.util.LruCache<String, Bitmap> {
 
     public interface Keys{
         String INPUT_BITMAP = "INPUT_BITMAP";

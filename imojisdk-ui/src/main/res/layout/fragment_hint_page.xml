@@ -10,7 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="148dp"
+        android:layout_marginBottom="@dimen/imoji_tips_card_bottom_margin"
         android:orientation="vertical"
         app:cardElevation="8dp"
         app:cardCornerRadius="10dp">
@@ -25,11 +25,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"
-                android:textSize="20sp"
+                android:paddingTop="@dimen/imoji_tips_top_bottom_padding"
+                android:paddingBottom="@dimen/imoji_tips_top_bottom_padding"
+                android:paddingLeft="@dimen/imoji_tips_left_right_padding"
+                android:paddingRight="@dimen/imoji_tips_left_right_padding"
+                android:textSize="@dimen/imoji_tips_text_size"
                 android:lines="2"
                 android:text="@string/imoji_tips"
                 android:textColor="@color/imoji_hint_text_color"/>
@@ -41,9 +41,9 @@
 
             <ImageView
                 android:id="@+id/imoji_iv_hint"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:scaleType="center"/>
+                android:layout_width="@dimen/imoji_tips_iv_size"
+                android:layout_height="@dimen/imoji_tips_iv_size"
+                android:scaleType="fitCenter"/>
 
             <View
                 android:layout_width="match_parent"
@@ -54,11 +54,11 @@
                 android:id="@+id/imoji_tv_detail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingTop="12dp"
-                android:paddingBottom="12dp"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"
-                android:textSize="20sp"
+                android:paddingTop="@dimen/imoji_tips_top_bottom_padding"
+                android:paddingBottom="@dimen/imoji_tips_top_bottom_padding"
+                android:paddingLeft="@dimen/imoji_tips_left_right_padding"
+                android:paddingRight="@dimen/imoji_tips_left_right_padding"
+                android:textSize="@dimen/imoji_tips_text_size"
                 android:lines="2"
                 android:gravity="center"
                 android:text="@string/imoji_hint_detail_trace"

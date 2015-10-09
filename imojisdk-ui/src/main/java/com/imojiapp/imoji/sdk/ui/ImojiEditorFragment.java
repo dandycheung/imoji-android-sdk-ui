@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -77,45 +78,8 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
     @Override
     public void onViewCreated(View v, Bundle savedInstanceState) {
 
-        //configure the toolbar
-        mToolbar = (Toolbar) v.findViewById(R.id.imoji_toolbar);
-        mToolbar.setNavigationIcon(R.drawable.create_back);
-        mToolbar.inflateMenu(R.menu.menu_imoji_editor_fragment);
-        mToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                if (item.getItemId() == R.id.imoji_mi_editor_help) {
-                    if (isResumed()) {
-                        TipsFragment f = TipsFragment.newInstance();
-                        getFragmentManager().beginTransaction().addToBackStack(null).setCustomAnimations(R.anim.abc_fade_in, -1, -1, R.anim.imoji_fade_out).add(R.id.imoji_tag_container, f).commit();
-                    }
-                    return true;
-                }
-                return false;
-            }
-        });
-        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (isAdded()) {
-                    getActivity().setResult(Activity.RESULT_CANCELED);
-                    getActivity().finish();
-                }
-            }
-        });
+        configureToolbar(v);
 
-        mToolbarScrim = v.findViewById(R.id.imoji_toolbar_scrim);
-        mBottomBarScrim = v.findViewById(R.id.imoji_bottom_bar_scrim);
-
-        Drawable scrim = ScrimUtil.makeCubicGradientScrimDrawable(0x66000000, 32, Gravity.TOP);
-        Drawable bottomBarScrim = ScrimUtil.makeCubicGradientScrimDrawable(0x66000000, 32, Gravity.BOTTOM);
-        if (Build.VERSION.SDK_INT >= 16) {
-            mToolbarScrim.setBackground(scrim);
-            mBottomBarScrim.setBackground(bottomBarScrim);
-        } else {
-            mToolbarScrim.setBackgroundDrawable(scrim);
-            mBottomBarScrim.setBackgroundDrawable(bottomBarScrim);
-        }
 
         mUndoButton = (ImageButton) v.findViewById(R.id.imoji_ib_undo);
         mUndoButton.setVisibility(View.GONE);
@@ -161,6 +125,48 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
 
         mIGEditorView = (IGEditorView) v.findViewById(R.id.imoji_editor_view);
         initEditor(savedInstanceState);
+    }
+
+    private void configureToolbar(View v) {
+        //configure the toolbar
+        mToolbar = (Toolbar) v.findViewById(R.id.imoji_toolbar);
+        mToolbar.setNavigationIcon(R.drawable.create_back);
+        mToolbar.inflateMenu(R.menu.menu_imoji_editor_fragment);
+        mToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                if (item.getItemId() == R.id.imoji_mi_editor_help) {
+                    if (isResumed()) {
+                        TipsFragment f = TipsFragment.newInstance();
+                        getFragmentManager().beginTransaction().addToBackStack(null).setCustomAnimations(R.anim.abc_fade_in, -1, -1, R.anim.imoji_fade_out).add(R.id.imoji_tag_container, f).commit();
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isAdded()) {
+                    getActivity().setResult(Activity.RESULT_CANCELED);
+                    getActivity().finish();
+                }
+            }
+        });
+
+        mToolbarScrim = v.findViewById(R.id.imoji_toolbar_scrim);
+        mBottomBarScrim = v.findViewById(R.id.imoji_bottom_bar_scrim);
+
+        Drawable scrim = ScrimUtil.makeCubicGradientScrimDrawable(0x66000000, 32, Gravity.TOP);
+        Drawable bottomBarScrim = ScrimUtil.makeCubicGradientScrimDrawable(0x66000000, 32, Gravity.BOTTOM);
+        if (Build.VERSION.SDK_INT >= 16) {
+            mToolbarScrim.setBackground(scrim);
+            mBottomBarScrim.setBackground(bottomBarScrim);
+        } else {
+            mToolbarScrim.setBackgroundDrawable(scrim);
+            mBottomBarScrim.setBackgroundDrawable(bottomBarScrim);
+        }
     }
 
     private void initEditor(Bundle savedInstanceState) {
@@ -277,13 +283,15 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
                 @Override
                 public void onSystemUiVisibilityChange(int flags) {
                     if ((flags & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-                        decorView.setSystemUiVisibility(
-                                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                                        | View.SYSTEM_UI_FLAG_FULLSCREEN
-                                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                            decorView.setSystemUiVisibility(
+                                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                            | View.SYSTEM_UI_FLAG_FULLSCREEN
+                                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                        }
                     }
                 }
             });
@@ -305,7 +313,8 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
         final protected Bitmap doInBackground(Params... params) {
             Params p = params[0];
             int[] sizeInfo = BitmapUtils.getSizeWithinBounds(p.mSource.getWidth(), p.mSource.getHeight(), p.mWidthBound, p.mHeightBound, true);
-            return Bitmap.createScaledBitmap(p.mSource, sizeInfo[0], sizeInfo[1], false);
+            Bitmap outBitmap = Bitmap.createScaledBitmap(p.mSource, sizeInfo[0], sizeInfo[1], false);
+            return outBitmap;
         }
 
         @Override

@@ -3,6 +3,7 @@ package com.imojiapp.imoji.sdk.ui.sample;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
@@ -29,7 +30,9 @@ public class MainActivity extends AppCompatActivity {
 //        setSupportActionBar(toolbar);
 
 
-        Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(R.drawable.sample)).getBitmap();
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.sample, options);
         EditorBitmapCache.getInstance().put(EditorBitmapCache.Keys.INPUT_BITMAP, bitmap);
         Intent intent = new Intent(this, ImojiEditorActivity.class);
         startActivityForResult(intent, ImojiEditorActivity.START_EDITOR_REQUEST_CODE);

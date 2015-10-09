@@ -122,11 +122,11 @@
             android:id="@+id/gl_tagbox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:alignmentMode="alignBounds"
+            app:alignmentMode="alignBounds"
             android:animateLayoutChanges="true"
-            android:columnCount="16"
-            android:columnOrderPreserved="false"
-            android:orientation="horizontal"></com.imojiapp.imoji.sdk.ui.widgets.AutoFitGridLayout>
+            app:columnCount="16"
+            app:columnOrderPreserved="false"
+            app:orientation="horizontal"></com.imojiapp.imoji.sdk.ui.widgets.AutoFitGridLayout>
     </ScrollView>
 
     <ProgressBar

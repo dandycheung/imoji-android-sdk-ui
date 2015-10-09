@@ -10,12 +10,12 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
-import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.GridLayout;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -26,7 +26,6 @@ import android.view.ViewTreeObserver;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.GridLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -45,6 +44,7 @@ import com.imojiapp.imojigraphics.IG;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -192,7 +192,12 @@ public class TagImojiFragment extends Fragment {
                 final int width = mImojiIv.getWidth();
                 final int height = mImojiIv.getHeight();
 
-                new OutlineAsyncTask(TagImojiFragment.this, imojiBitmap, width, height).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    new OutlineAsyncTask(TagImojiFragment.this, imojiBitmap, width, height).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                } else {
+                    new OutlineAsyncTask(TagImojiFragment.this, imojiBitmap, width, height).execute();
+                }
             }
         });
     }

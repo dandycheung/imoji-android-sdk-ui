@@ -2,7 +2,6 @@ package com.imojiapp.imoji.sdk.ui;
 
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -13,7 +12,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -314,6 +312,11 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
             Params p = params[0];
             int[] sizeInfo = BitmapUtils.getSizeWithinBounds(p.mSource.getWidth(), p.mSource.getHeight(), p.mWidthBound, p.mHeightBound, true);
             Bitmap outBitmap = Bitmap.createScaledBitmap(p.mSource, sizeInfo[0], sizeInfo[1], false);
+            if (outBitmap.getConfig() != Bitmap.Config.ARGB_8888) {
+                Bitmap tmp = outBitmap.copy(Bitmap.Config.ARGB_8888, true);
+                outBitmap.recycle();
+                outBitmap = tmp;
+            }
             return outBitmap;
         }
 

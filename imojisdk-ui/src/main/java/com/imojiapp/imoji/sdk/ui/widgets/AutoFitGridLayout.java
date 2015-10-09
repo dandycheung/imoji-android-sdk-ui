@@ -1,15 +1,15 @@
 package com.imojiapp.imoji.sdk.ui.widgets;
 
 import android.content.Context;
+import android.support.v7.widget.GridLayout;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.GridLayout;
 
 /**
  * Created by sajjadtabib on 9/30/14.
  */
-public class AutoFitGridLayout extends GridLayout {
+public class AutoFitGridLayout  extends android.support.v7.widget.GridLayout{
     private static final String LOG_TAG = AutoFitGridLayout.class.getSimpleName();
 
     private boolean mFirstPass;

@@ -21,9 +21,9 @@ import android.view.ViewTreeObserver;
 import android.widget.ImageButton;
 
 import com.imojiapp.imoji.sdk.BitmapUtils;
-import com.imojiapp.imoji.sdk.ui.utils.ScrimUtil;
 import com.imojiapp.imojigraphics.IG;
 import com.imojiapp.imojigraphics.IGEditorView;
+import com.imojiapp.imoji.sdk.ui.utils.ScrimUtil;
 
 import java.lang.ref.WeakReference;
 
@@ -89,6 +89,8 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
                     if (!mIGEditorView.canUndo()) {
                         mIGEditorView.setVisibility(View.GONE);
                     }
+                } else {
+                    mIGEditorView.setVisibility(View.GONE);
                 }
             }
         });

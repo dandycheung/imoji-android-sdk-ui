@@ -24,7 +24,7 @@ public class MyApplication extends Application {
 ```
 4. Add the ImojiEditorActivity to your `AndroidManifest.xml` file. You may apply any theme you like, but make sure the theme is xxx.NoActionBar. In other words, it does not use the ActionBar. More on theming in the next item.
 
-```
+```xml
 <activity
     android:windowSoftInputMode="adjustNothing"
     android:name="com.imojiapp.imoji.sdk.ui.ImojiEditorActivity"

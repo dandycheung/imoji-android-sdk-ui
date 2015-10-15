@@ -4,7 +4,13 @@ The imoji ui sdk for Android is a library project that will provide out of the b
 ## SDK Integration
 1. Register [here.](https://developer.imoji.io/developer/sdk#/home) to get a client id and secret
 
-2. Import the project as a module into your app. *Note: a maven artificat will be released soon, but for now you will have to import*
+2. Add the Imoji UI SDK as a dependency in your build.gradle file.
+
+```
+compile('com.imojiapp:imoji-sdk-ui:+@aar'){
+   transitive=true
+}
+``` 
 
 3. Create an Application class or update your current application:
 ```java
@@ -16,7 +22,33 @@ public class MyApplication extends Application {
     }
 }
 ```
-4. SDK Integration Complete
+4. Add the ImojiEditorActivity to your `AndroidManifest.xml` file. You may apply any theme you like, but make sure the theme is xxx.NoActionBar. In other words, it does not use the ActionBar. More on theming in the next item.
+
+```
+<activity
+    android:windowSoftInputMode="adjustNothing"
+    android:name="com.imojiapp.imoji.sdk.ui.ImojiEditorActivity"
+    android:theme="@style/AppTheme.NoActionBar"></activity>
+```
+
+5. Editor theming.
+The editor requires that you have  appropriately set `colorPrimary`, `colorPrimaryDark`, and `colorAccent` attributes because the default coloring of the editor will depend on those. Therefore, in your styles.xml where you define your style, make sure that these are set:
+
+```xml
+   <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="imoji__editorToolbarTheme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
+    </style>
+```
+
+You can also customize the toolbars used in the editor by setting the `imoji__editorToolbarTheme` attribute to whatever style you wish. You can see this in the code snippet above.
+
+6. SDK Integration Complete
 
 ## Imoji Creator
 Now that you have integrated the SDK, you can use the imoji creator in your app. To create an imoji, follow these steps:

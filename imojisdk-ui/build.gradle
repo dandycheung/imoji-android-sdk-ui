@@ -11,12 +11,13 @@ repositories{
 android {
     compileSdkVersion 22
     buildToolsVersion "23.0.1"
+    defaultPublishConfig "release"
 
     defaultConfig {
         minSdkVersion 10
         targetSdkVersion 22
         versionCode 1
-        versionName "0.1.0"
+        versionName "0.1.1"
     }
     buildTypes {
         release {
@@ -34,7 +35,7 @@ dependencies {
     }
     compile 'com.android.support:cardview-v7:22.2.1'
     compile 'com.android.support:gridlayout-v7:22.2.1'
-    compile project(':imojigraphics')
+//    compile project(':imojigraphics')
 }
 
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")

@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/imoji-android-sdk-ui.iml" filepath="$PROJECT_DIR$/imoji-android-sdk-ui.iml" />
-      <module fileurl="file://$PROJECT_DIR$/imojigraphics/imojigraphics.iml" filepath="$PROJECT_DIR$/imojigraphics/imojigraphics.iml" />
       <module fileurl="file://$PROJECT_DIR$/imojisdk-ui/imojisdk-ui.iml" filepath="$PROJECT_DIR$/imojisdk-ui/imojisdk-ui.iml" />
       <module fileurl="file://$PROJECT_DIR$/imojisdk-ui-sample/imojisdk-ui-sample.iml" filepath="$PROJECT_DIR$/imojisdk-ui-sample/imojisdk-ui-sample.iml" />
     </modules>

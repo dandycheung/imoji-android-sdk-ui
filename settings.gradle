@@ -1,1 +1,1 @@
-include ':imojisdk-ui', ':imojisdk-ui-sample', ':imojigraphics'
+include ':imojisdk-ui', ':imojisdk-ui-sample'

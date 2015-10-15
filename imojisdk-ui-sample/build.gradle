@@ -34,5 +34,9 @@ dependencies {
     compile (project(':imojisdk-ui')) {
             transitive=true
     }
+//    compile('com.imojiapp:imoji-sdk-ui:0.1.2@aar'){
+//        transitive=true
+//    }
+
 
 }

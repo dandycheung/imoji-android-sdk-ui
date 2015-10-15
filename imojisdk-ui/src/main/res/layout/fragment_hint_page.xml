@@ -43,7 +43,7 @@
                 android:id="@+id/imoji_iv_hint"
                 android:layout_width="@dimen/imoji_tips_iv_size"
                 android:layout_height="@dimen/imoji_tips_iv_size"
-                android:scaleType="fitCenter"/>
+                android:scaleType="fitXY"/>
 
             <View
                 android:layout_width="match_parent"

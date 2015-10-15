@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="imoji_tips_iv_size">230dp</dimen>
+    <dimen name="imoji_tips_left_right_padding">6dp</dimen>
+    <dimen name="imoji_tips_top_bottom_padding">8dp</dimen>
+    <dimen name="imoji_tips_text_size">16sp</dimen>
+    <dimen name="imoji_tips_element_margin">16dp</dimen>
+    <dimen name="imoji_tips_card_bottom_margin">118dp</dimen>
+</resources>

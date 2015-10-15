@@ -1,15 +1,19 @@
 package com.imojiapp.imojigraphics;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.graphics.drawable.BitmapDrawable;
 import android.opengl.GLSurfaceView;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
+
+import com.imojiapp.imoji.sdk.ui.R;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -44,15 +48,16 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         density = metrics.density;
 
-//        TypedArray array = context.obtainStyledAttributes(attrs, com.imojiapp.imojigraphics.R.styleable.IGEditorView);
-//        if (array.hasValue(com.imojiapp.imojigraphics.R.styleable.IGEditorView_ig__drawable)) {
-//            BitmapDrawable bitmapDrawable = (BitmapDrawable) array.getDrawable(com.imojiapp.imojigraphics.R.styleable.IGEditorView_ig__drawable);
+//        TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.IGEditorView);
+//        if (array.hasValue(R.styleable.IGEditorView_ig__drawable)) {
+//            BitmapDrawable bitmapDrawable = (BitmapDrawable) array.getDrawable(R.styleable.IGEditorView_ig__drawable);
 //            inputBitmap = bitmapDrawable.getBitmap();
 //        }
 
         setEGLContextClientVersion(2);
         setEGLConfigChooser(8, 8, 8, 8, 0, 8);
         getHolder().setFormat(PixelFormat.TRANSLUCENT);
+//        setZOrderOnTop(true);
         setRenderer(this);
     }
 
@@ -73,18 +78,16 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
 
     @Override
     public void onDrawFrame(GL10 gl) {
-
-        gl.glViewport(0, 0, surfaceWidth, surfaceHeight);
-
         while (!mEditorIndependentGLQueue.isEmpty()) {
             mEditorIndependentGLQueue.poll().run();
         }
 
         if (igEditor != 0) {
-
             while (!mGLQueue.isEmpty()) {
                 mGLQueue.poll().run();
             }
+
+            gl.glViewport(0, 0, surfaceWidth, surfaceHeight);
 
             IG.EditorDisplay(igEditor);
         }
@@ -200,6 +203,10 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
             igInputImage = IG.ImageFromNative(igContext, inputBitmap, 1);
             igEditor = IG.EditorCreate(igInputImage);
 
+            Log.d("IGEditorView", "We have an editor!");
+            Log.d("IGEditorView", "Input bitmap: " + inputBitmap.getWidth() + "x" + inputBitmap.getHeight());
+            Log.d("IGEditorView", "Input image" + IG.ImageGetWidth(igInputImage) + "x" + IG.ImageGetHeight(igInputImage));
+
             aspectFit();
         }
     }
@@ -227,7 +234,7 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                if(stateListener != null && (newState != state || newSubstate != substate)) {
+                if (stateListener != null && (newState != state || newSubstate != substate)) {
                     state = newState;
                     substate = newSubstate;
 
@@ -265,12 +272,16 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
         // TODO: Refresh display here!
     }
 
+    public Bitmap getInputBitmap() {
+        return this.inputBitmap;
+    }
+
     public boolean isImojiReady() {
-        return igEditor == 0 ? false : IG.EditorImojiIsReady(igEditor);
+        return igEditor != 0 && IG.EditorImojiIsReady(igEditor);
     }
 
     public boolean canUndo() {
-        return igEditor == 0 ? false : IG.EditorCanUndo(igEditor);
+        return igEditor != 0 && IG.EditorCanUndo(igEditor);
     }
 
     public void scrollTo(final float x, final float y) {
@@ -395,7 +406,6 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
     }
 
     public void setImageAlpha(final int alpha) {
-
         mGLQueue.add(new Runnable() {
             @Override
             public void run() {
@@ -404,8 +414,19 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
         });
     }
 
-    public byte[] serialize() {
-        return IG.EditorSerialize(igEditor);
+    public void serialize(final DataListener dataListener) {
+        mGLQueue.add(new Runnable() {
+            @Override
+            public void run() {
+                final byte[] data = IG.EditorSerialize(igEditor);
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        dataListener.onDataReady(data);
+                    }
+                });
+            }
+        });
     }
 
     public void deserialize(final byte[] data) {
@@ -444,5 +465,9 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
     // Callback interface for when user requests the output bitmap
     public interface BitmapListener {
         void onBitmapOutputReady(Bitmap bitmap);
+    }
+
+    public interface DataListener {
+        void onDataReady(byte[] data);
     }
 }

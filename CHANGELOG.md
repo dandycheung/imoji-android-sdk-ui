@@ -1,5 +1,12 @@
 * Updates
+#0.1.2
+- Fixed flickering when transitioning into the tagging phase
+
+#0.1.1
+- Updated hint layouts to fit properly in portrait. No landscape support yet.
+- Removed imojigraphics project dependency
+
+#0.1.0
 - Set SDK Version to 22
 - Added hints
 - More styling of the editor based on themes
-- 

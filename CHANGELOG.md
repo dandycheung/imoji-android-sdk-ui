@@ -1,4 +1,8 @@
 * Updates
+#0.1.3
+- Removed unused assets
+- Optimized asset usage 
+
 #0.1.2
 - Fixed flickering when transitioning into the tagging phase
 - Fixed bug that outlined whole image when you went back from tagging screen 

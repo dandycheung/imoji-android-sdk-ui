@@ -1,19 +1,15 @@
 package com.imojiapp.imojigraphics;
 
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
-import android.graphics.drawable.BitmapDrawable;
 import android.opengl.GLSurfaceView;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
-
-import com.imojiapp.imoji.sdk.ui.R;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -203,10 +199,6 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
             igInputImage = IG.ImageFromNative(igContext, inputBitmap, 1);
             igEditor = IG.EditorCreate(igInputImage);
 
-            Log.d("IGEditorView", "We have an editor!");
-            Log.d("IGEditorView", "Input bitmap: " + inputBitmap.getWidth() + "x" + inputBitmap.getHeight());
-            Log.d("IGEditorView", "Input image" + IG.ImageGetWidth(igInputImage) + "x" + IG.ImageGetHeight(igInputImage));
-
             aspectFit();
         }
     }
@@ -244,12 +236,22 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
         });
     }
 
-    public void undo() {
+    public void undo(final UndoListener undoListener) {
         if (igEditor != 0) {
             mGLQueue.add(new Runnable() {
                 @Override
                 public void run() {
                     IG.EditorUndo(igEditor);
+                    if(undoListener != null) {
+                        mHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                undoListener.onUndone(IG.EditorCanUndo(igEditor));
+                            }
+                        });
+                    }
+
+                    updateState();
                 }
             });
 
@@ -285,10 +287,6 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
     }
 
     public void scrollTo(final float x, final float y) {
-        if (igEditor == 0) {
-            return;
-        }
-
         mGLQueue.add(new Runnable() {
             @Override
             public void run() {
@@ -300,10 +298,6 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
     }
 
     public void zoomTo(final float zoom) {
-        if (igEditor == 0) {
-            return;
-        }
-
         mGLQueue.add(new Runnable() {
             @Override
             public void run() {
@@ -312,6 +306,15 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
         });
 
         // TODO: Refresh display here!
+    }
+
+    public void gravitateTo(final float x, final float y) {
+        mGLQueue.add(new Runnable() {
+            @Override
+            public void run() {
+                IG.EditorGravitateTo(igEditor, x, y);
+            }
+        });
     }
 
     // Return the edge paths, for use with BorderSetEdgePaths() or WebP embedded chunk; destroy after use
@@ -469,5 +472,9 @@ public class IGEditorView extends GLSurfaceView implements GLSurfaceView.Rendere
 
     public interface DataListener {
         void onDataReady(byte[] data);
+    }
+
+    public interface UndoListener {
+        void onUndone(boolean canUndo);
     }
 }

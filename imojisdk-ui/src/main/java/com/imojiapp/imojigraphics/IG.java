@@ -80,6 +80,7 @@ public class IG {
     public static native void EditorTouchEvent(int igEditor, int igTouchType, int igTouchID, float x, float y);
     public static native void EditorScrollTo(int igEditor, float x, float y);
     public static native void EditorZoomTo(int igEditor, float zoom);
+    public static native void EditorGravitateTo(int igEditor, float x, float y);
     public static native boolean EditorCanUndo(int igEditor);
     public static native void EditorUndo(int igEditor);
     public static native int EditorGetEdgePaths(int igEditor);

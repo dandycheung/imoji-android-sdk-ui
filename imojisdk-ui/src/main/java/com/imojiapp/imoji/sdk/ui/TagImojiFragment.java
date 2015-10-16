@@ -37,9 +37,9 @@ import com.imojiapp.imoji.sdk.BitmapUtils;
 import com.imojiapp.imoji.sdk.Callback;
 import com.imojiapp.imoji.sdk.Imoji;
 import com.imojiapp.imoji.sdk.ImojiApi;
-import com.imojiapp.imojigraphics.IG;
 import com.imojiapp.imoji.sdk.ui.utils.EditorBitmapCache;
 import com.imojiapp.imoji.sdk.ui.utils.ScrimUtil;
+import com.imojiapp.imojigraphics.IG;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;

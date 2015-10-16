@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -21,9 +22,9 @@ import android.view.ViewTreeObserver;
 import android.widget.ImageButton;
 
 import com.imojiapp.imoji.sdk.BitmapUtils;
+import com.imojiapp.imoji.sdk.ui.utils.ScrimUtil;
 import com.imojiapp.imojigraphics.IG;
 import com.imojiapp.imojigraphics.IGEditorView;
-import com.imojiapp.imoji.sdk.ui.utils.ScrimUtil;
 
 import java.lang.ref.WeakReference;
 
@@ -46,6 +47,7 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
     private Toolbar mToolbar;
     private View mToolbarScrim;
     private View mBottomBarScrim;
+    private byte[] mStateData;
 
 
     @Override
@@ -73,6 +75,17 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
         return v;
     }
 
+    private IGEditorView.UndoListener mUndoListener = new IGEditorView.UndoListener() {
+        @Override
+        public void onUndone(boolean canUndo) {
+            if (!canUndo) {
+                if (mUndoButton != null && mIGEditorView != null) {
+                    mUndoButton.setVisibility(View.GONE);
+                }
+            }
+        }
+    };
+
     @Override
     public void onViewCreated(View v, Bundle savedInstanceState) {
 
@@ -85,12 +98,8 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
             @Override
             public void onClick(View v) {
                 if (mIGEditorView.canUndo()) {
-                    mIGEditorView.undo();
-                    if (!mIGEditorView.canUndo()) {
-                        mIGEditorView.setVisibility(View.GONE);
-                    }
-                } else {
-                    mIGEditorView.setVisibility(View.GONE);
+                    mIGEditorView.undo(mUndoListener);
+
                 }
             }
         });
@@ -175,6 +184,7 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
         int windowBackground = typedArray.getColor(0, Color.BLACK);
         typedArray.recycle();
         mIGEditorView.setGLBackgroundColor(windowBackground);
+        mIGEditorView.gravitateTo(0, -1);
 //        mIGEditorView.setGLBackgroundColor(Color.parseColor("#00000000"));
         mIGEditorView.setBackgroundColor(Color.TRANSPARENT);
         mIGEditorView.setImageAlpha(225);
@@ -184,11 +194,6 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
             public void onStateChanged(int igEditorState, int igEditorSubstate) {
                 switch (igEditorState) {
                     case IG.EDITOR_DRAW:
-                        if (mIGEditorView.canUndo()) {
-                            mUndoButton.setVisibility(View.VISIBLE);
-                        } else {
-                            mUndoButton.setVisibility(View.GONE);
-                        }
                         mTagButton.setVisibility(View.GONE);
                         mIGEditorView.setImageAlpha(225);
                         break;
@@ -197,7 +202,23 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
                         mTagButton.setVisibility(View.VISIBLE);
                         break;
                 }
-//                Log.d(LOG_TAG, "state changed to: " + igEditorState + " subState: " + igEditorSubstate);
+
+                if (mIGEditorView.canUndo()) {
+                    mUndoButton.setVisibility(View.VISIBLE);
+                } else {
+                    mUndoButton.setVisibility(View.GONE);
+                }
+                Log.d(LOG_TAG, "state changed to: " + igEditorState + " subState: " + igEditorSubstate);
+
+                //if there's a state change, lets serialize the data
+                if (mIGEditorView != null) {
+                    mIGEditorView.serialize(new IGEditorView.DataListener() {
+                        @Override
+                        public void onDataReady(byte[] data) {
+                            mStateData = data;
+                        }
+                    });
+                }
             }
         });
 
@@ -214,6 +235,15 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
         mBitmapRetainerFragment = findOrCreateRetainedFragment();
         if (savedInstanceState != null) {
             mPreScaleBitmap = mBitmapRetainerFragment.mPreScaledBitmap;
+            mStateData = savedInstanceState.getByteArray(EDITOR_STATE_BUNDLE_ARG_KEY);
+            if (mStateData != null) {
+                mIGEditorView.deserialize(mStateData);
+            }
+
+            if (mIGEditorView.canUndo()) {
+                mUndoButton.setVisibility(View.VISIBLE);
+            }
+
         }
     }
 
@@ -237,8 +267,9 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
     public void onSaveInstanceState(Bundle outState) {
         if (mPreScaleBitmap != null && mBitmapRetainerFragment != null) {
             mBitmapRetainerFragment.mPreScaledBitmap = mPreScaleBitmap;
-//            outState.putByteArray(EDITOR_STATE_BUNDLE_ARG_KEY, mIGEditorView.serialize());
         }
+
+        outState.putByteArray(EDITOR_STATE_BUNDLE_ARG_KEY, mStateData);
         
         super.onSaveInstanceState(outState);
 

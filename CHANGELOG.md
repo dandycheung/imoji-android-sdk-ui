@@ -1,4 +1,9 @@
 * Updates
+#0.1.4
+- Fixed undo button misbehavior in the editor
+- Updated graphics lib
+- Added a simple transition animation to dots in the hints
+
 #0.1.3
 - Removed unused assets
 - Optimized asset usage 

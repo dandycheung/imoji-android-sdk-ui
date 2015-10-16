@@ -1,20 +1,25 @@
 package com.imojiapp.imoji.sdk.ui.view;
 
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.Build;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
 
 import com.imojiapp.imoji.sdk.ui.R;
+import com.imojiapp.imoji.sdk.ui.utils.animator.ArgbEvaluator;
 
 /**
  * TODO: document your custom view class.
  */
 public class DotDotView extends View {
+    public static final String SELECTED_INDEX_BUNDLE_ARG_KEY = "SELECTED_INDEX_BUNDLE_ARG_KEY";
 
     private float mRadius;
     private float mInnerRadius;
@@ -26,6 +31,7 @@ public class DotDotView extends View {
     private int mSelectedDotColor;
     private int mUnselectedDotColor;
     private boolean mTransitioning;
+    private Dot[] mDots;
 
     public DotDotView(Context context) {
         super(context);
@@ -67,40 +73,7 @@ public class DotDotView extends View {
 
     }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
 
-        int paddingLeft = getPaddingLeft();
-        int paddingTop = getPaddingTop();
-        int paddingRight = getPaddingRight();
-        int paddingBottom = getPaddingBottom();
-
-        int contentWidth = getWidth() - paddingLeft - paddingRight;
-        int contentHeight = getHeight() - paddingTop - paddingBottom;
-
-        Rect contentRect = new Rect(paddingLeft, paddingTop, paddingLeft + contentWidth, paddingTop + contentHeight);
-
-        float drawWidth = getDrawWidth();
-        float drawHeight = mRadius * 2;
-        float centerX = contentRect.centerX() - drawWidth / 2 + mRadius;
-        float centerY = contentRect.centerY();
-
-
-        for (int i = 0; i < mNumDots; i++) {
-            //start drawing
-            if (i == mSelectedDotIndex) { //draw a filled circle
-                mPaint.setColor(mSelectedDotColor);
-            } else {
-                mPaint.setColor(mUnselectedDotColor);
-            }
-
-            canvas.drawCircle(centerX, centerY, mRadius, mPaint);
-
-            //update draw locations
-            centerX += mRadius * 2 + mDotMargin;
-        }
-
-    }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -134,29 +107,125 @@ public class DotDotView extends View {
         setMeasuredDimension(width, height);
     }
 
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldw);
+
+        if (oldw == 0 && oldh == 0) {
+            int paddingLeft = getPaddingLeft();
+            int paddingTop = getPaddingTop();
+            int paddingRight = getPaddingRight();
+            int paddingBottom = getPaddingBottom();
+
+            int contentWidth = getWidth() - paddingLeft - paddingRight;
+            int contentHeight = getHeight() - paddingTop - paddingBottom;
+
+            Rect contentRect = new Rect(paddingLeft, paddingTop, paddingLeft + contentWidth, paddingTop + contentHeight);
+
+            float drawWidth = getDrawWidth();
+            float drawHeight = mRadius * 2;
+            float centerX = contentRect.centerX() - drawWidth / 2 + mRadius;
+            float centerY = contentRect.centerY();
+
+
+            mDots = new Dot[mNumDots];
+            for (int i = 0; i < mNumDots; i++) {
+                mDots[i] = new Dot(mUnselectedDotColor, centerX, centerY, mRadius, mPaint);
+                centerX += mRadius * 2 + mDotMargin;
+            }
+
+            setIndex(mSelectedDotIndex);
+        }
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        for (int i = 0; i < mNumDots; i++) {
+            mDots[i].onDraw(canvas);
+        }
+    }
+
     private float getDrawWidth() {
         return mNumDots * (mRadius * 2) + mDotMargin * (mNumDots - 1);
     }
 
     public void nextDot() {
         if (mSelectedDotIndex < mNumDots - 1) {
-            ++mSelectedDotIndex;
-            invalidate();
+            setIndex(mSelectedDotIndex + 1);
         }
     }
 
     public void previousDot() {
         if (mSelectedDotIndex > 0) {
-            --mSelectedDotIndex;
-            invalidate();
+            setIndex(mSelectedDotIndex - 1);
         }
     }
 
     public void setIndex(int index) {
+        if (mDots == null || mDots.length == 0) {
+            if (index >= 0 && index < mNumDots) {
+                mSelectedDotIndex = index;
+            }
+            return;
+        }
+
         if (index >= 0 && index < mNumDots) {
+
+            if (Build.VERSION.SDK_INT >= 21) {
+                //animate the currently selected item back to gray
+                ObjectAnimator.ofArgb(mDots[mSelectedDotIndex], "color", mSelectedDotColor, mUnselectedDotColor).start();
+            } else if (Build.VERSION.SDK_INT >= 11) {
+                ObjectAnimator animator = ObjectAnimator.ofInt(mDots[mSelectedDotIndex], "color", mSelectedDotColor, mUnselectedDotColor);
+                animator.setEvaluator(ArgbEvaluator.getInstance());
+                animator.start();
+            } else {
+                mDots[mSelectedDotIndex].setColor(mUnselectedDotColor);
+            }
+
             mSelectedDotIndex = index;
+
+            if (Build.VERSION.SDK_INT >= 21) {
+                ObjectAnimator.ofArgb(mDots[mSelectedDotIndex], "color", mUnselectedDotColor, mSelectedDotColor).start();
+            } else if (Build.VERSION.SDK_INT >= 11) {
+                ObjectAnimator animator = ObjectAnimator.ofInt(mDots[mSelectedDotIndex], "color", mUnselectedDotColor, mSelectedDotColor);
+                animator.setEvaluator(ArgbEvaluator.getInstance());
+                animator.start();
+            } else {
+                mDots[mSelectedDotIndex].setColor(mSelectedDotColor);
+            }
+        }
+    }
+
+    class Dot {
+
+        private int mColor;
+        private float mCenterX;
+        private float mCenterY;
+        private float mRadius;
+        private Paint mPaint;
+
+        public Dot(int color, float centerX, float centerY, float radius, Paint paint) {
+            mColor = color;
+            mCenterX = centerX;
+            mCenterY = centerY;
+            mRadius = radius;
+            mPaint = paint;
+        }
+
+        public void onDraw(Canvas canvas) {
+            mPaint.setColor(mColor);
+            canvas.drawCircle(mCenterX, mCenterY, mRadius, mPaint);
+        }
+
+        public int getColor() {
+            return mColor;
+        }
+
+        public void setColor(int color) {
+            mColor = color;
             invalidate();
         }
+
     }
 
 }

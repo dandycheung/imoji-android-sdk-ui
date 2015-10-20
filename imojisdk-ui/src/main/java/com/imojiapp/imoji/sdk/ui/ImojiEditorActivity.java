@@ -13,6 +13,7 @@ public class ImojiEditorActivity extends AppCompatActivity {
 
     public static final int START_EDITOR_REQUEST_CODE = 1001;
     public static final String IMOJI_MODEL_BUNDLE_ARG_KEY = "IMOJI_MODEL_BUNDLE_ARG_KEY";
+    public static final String TAG_IMOJI_BUNDLE_ARG_KEY = "TAG_IMOJI_BUNDLE_ARG_KEY";
     private static final String LOG_TAG = ImojiEditorActivity.class.getSimpleName();
     private ImojiEditorFragment mImojiEditorFragment;
 
@@ -22,6 +23,7 @@ public class ImojiEditorActivity extends AppCompatActivity {
         setContentView(R.layout.activity_imoji_editor);
 
         if (savedInstanceState == null) {
+            boolean tagImojis = getIntent().getBooleanExtra(TAG_IMOJI_BUNDLE_ARG_KEY, true);
             Bitmap inputBitmap = EditorBitmapCache.getInstance().get(EditorBitmapCache.Keys.INPUT_BITMAP);
             if (inputBitmap == null) { //no need to continue
 
@@ -29,7 +31,7 @@ public class ImojiEditorActivity extends AppCompatActivity {
                 finish();
                 return;
             }
-            mImojiEditorFragment = new ImojiEditorFragment();
+            mImojiEditorFragment = ImojiEditorFragment.newInstance(tagImojis);
             mImojiEditorFragment.setEditorBitmap(inputBitmap);
             getSupportFragmentManager().beginTransaction().add(R.id.container, mImojiEditorFragment, ImojiEditorFragment.FRAGMENT_TAG).commit();
         } else {

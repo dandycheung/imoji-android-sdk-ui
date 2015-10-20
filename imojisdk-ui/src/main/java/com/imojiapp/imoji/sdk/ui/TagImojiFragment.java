@@ -1,9 +1,7 @@
 package com.imojiapp.imoji.sdk.ui;
 
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -33,15 +31,10 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.imojiapp.imoji.sdk.BitmapUtils;
-import com.imojiapp.imoji.sdk.Callback;
-import com.imojiapp.imoji.sdk.Imoji;
 import com.imojiapp.imoji.sdk.ImojiApi;
 import com.imojiapp.imoji.sdk.ui.utils.EditorBitmapCache;
 import com.imojiapp.imoji.sdk.ui.utils.ScrimUtil;
-import com.imojiapp.imojigraphics.IG;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,7 +42,7 @@ import java.util.List;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class TagImojiFragment extends Fragment {
+public class TagImojiFragment extends Fragment implements OutlineAsyncTask.OutlinedBitmapReadyListener{
     public static final String FRAGMENT_TAG = TagImojiFragment.class.getSimpleName();
     private static final String LOG_TAG = TagImojiFragment.class.getSimpleName();
     private static final String TAGS_BUNDLE_ARG_KEY = "TAGS_BUNDLE_ARG_KEY";
@@ -272,84 +265,13 @@ public class TagImojiFragment extends Fragment {
         return layer;
     }
 
-    private static class CreateCallback implements Callback<Imoji, String> {
-
-        private WeakReference<Activity> mActivityWeakReference;
-
-        public CreateCallback(Activity activity) {
-            mActivityWeakReference = new WeakReference<Activity>(activity);
+    @Override
+    public void onOutlinedBitmapReady(Bitmap outlinedBitmap) {
+        if (mImojiIv != null) {
+            mImojiIv.setImageBitmap(outlinedBitmap);
         }
 
-        @Override
-        public void onSuccess(Imoji result) {
-            Activity a = mActivityWeakReference.get();
-            if (a != null) {
-                Intent intent = new Intent();
-                intent.putExtra(ImojiEditorActivity.IMOJI_MODEL_BUNDLE_ARG_KEY, result);
-                a.setResult(Activity.RESULT_OK, intent);
-                a.finish();
-            }
-        }
-
-        @Override
-        public void onFailure(String result) {
-            Activity a = mActivityWeakReference.get();
-            if (a != null) {
-                a.setResult(Activity.RESULT_CANCELED, null);
-                a.finishActivity(ImojiEditorActivity.START_EDITOR_REQUEST_CODE);
-            }
-        }
-    }
-
-    private static class OutlineAsyncTask extends AsyncTask<Void, Void, Bitmap> {
-        private final Bitmap mImojiBitmap;
-        private final int mWidth;
-        private final int mHeight;
-        private WeakReference<TagImojiFragment> mFragmentWeakRef;
-
-        public OutlineAsyncTask(TagImojiFragment f, Bitmap imojiBitmap, int width, int height) {
-            mFragmentWeakRef = new WeakReference<>(f);
-            mImojiBitmap = imojiBitmap;
-            mWidth = width;
-            mHeight = height;
-        }
-
-        @Override
-        protected Bitmap doInBackground(Void... params) {
-            int igContext = IG.ContextCreate();
-            if (igContext == 0) {
-                System.err.println("Unable to create IG context");
-                return null;
-            }
-
-
-            int[] size = BitmapUtils.getSizeWithinBounds(mImojiBitmap.getWidth(), mImojiBitmap.getHeight(), mWidth, mHeight, true);
-            Bitmap b = Bitmap.createScaledBitmap(mImojiBitmap, size[0], size[1], false);
-            int igBorder = IG.BorderCreatePreset(mImojiBitmap.getWidth(), mImojiBitmap.getHeight(), IG.BORDER_CLASSIC);
-            int padding = IG.BorderGetPadding(igBorder);
-
-            int igInputImage = IG.ImageFromNative(igContext, mImojiBitmap, 1);
-            int igOutputImage = IG.ImageCreate(igContext, IG.ImageGetWidth(igInputImage) + padding * 2, IG.ImageGetHeight(igInputImage) + padding * 2);
-            IG.BorderRender(igBorder, igInputImage, igOutputImage, padding - 1, padding - 1, 1, 1);
-            Bitmap outputBitmap = IG.ImageToNative(igOutputImage);
-            IG.ImageDestroy(igOutputImage);
-            IG.ImageDestroy(igInputImage);
-            IG.BorderDestroy(igBorder, true);
-            IG.ContextDestroy(igContext);
-
-            return outputBitmap;
-
-        }
-
-
-        @Override
-        protected void onPostExecute(Bitmap b) {
-            TagImojiFragment tagImojiFragment = mFragmentWeakRef.get();
-            if (tagImojiFragment != null && tagImojiFragment.mImojiIv != null) {
-                tagImojiFragment.mImojiIv.setImageBitmap(b);
-                //also save it to cache
-                EditorBitmapCache.getInstance().put(EditorBitmapCache.Keys.OUTLINED_BITMAP, b);
-            }
-        }
+        //also save it to cache
+        EditorBitmapCache.getInstance().put(EditorBitmapCache.Keys.OUTLINED_BITMAP, outlinedBitmap);
     }
 }

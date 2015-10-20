@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -20,39 +19,65 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 
 import com.imojiapp.imoji.sdk.BitmapUtils;
+import com.imojiapp.imoji.sdk.ImojiApi;
+import com.imojiapp.imoji.sdk.ui.utils.EditorBitmapCache;
 import com.imojiapp.imoji.sdk.ui.utils.ScrimUtil;
 import com.imojiapp.imojigraphics.IG;
 import com.imojiapp.imojigraphics.IGEditorView;
 
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.OnGlobalLayoutListener{
-    private static final String LOG_TAG = ImojiEditorFragment.class.getSimpleName();
+public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.OnGlobalLayoutListener, OutlineAsyncTask.OutlinedBitmapReadyListener{
     public static final String FRAGMENT_TAG = ImojiEditorFragment.class.getSimpleName();
     public static final String EDITOR_STATE_BUNDLE_ARG_KEY = "EDITOR_STATE_BUNDLE_ARG_KEY";
-    private Bitmap mPreScaleBitmap;
-    private IGEditorView mIGEditorView;
-    private BitmapRetainerFragment mBitmapRetainerFragment;
-    private boolean mIsTagging;
-    private int mWidthBound = 0;
-    private int mHeightBound = 0;
+    static final String TAG_IMOJI_BUNDLE_ARG_KEY = "TAG_IMOJI_BUNDLE_ARG_KEY";
+    public static final String IS_PROCESSING_BUNDLE_ARG_KEY = "IS_PROCESSING_BUNDLE_ARG_KEY";
+    private static final String LOG_TAG = ImojiEditorFragment.class.getSimpleName();
+
+
     private Handler mHandler = new Handler();
+    private Bitmap mPreScaleBitmap;
+    private BitmapRetainerFragment mBitmapRetainerFragment;
+
+
+    private IGEditorView mIGEditorView;
     private ImageButton mUndoButton;
-    private ImageButton mTagButton;
+    private ImageButton mNextButton;
     private Toolbar mToolbar;
     private View mToolbarScrim;
     private View mBottomBarScrim;
+    private ProgressBar mProgressBar;
+
     private byte[] mStateData;
+    private boolean mDoTagging = true;
+    private boolean mIsProcessing;
+    private int mWidthBound = 0;
+    private int mHeightBound = 0;
+
+
+    public static ImojiEditorFragment newInstance(boolean tag) {
+        ImojiEditorFragment f = new ImojiEditorFragment();
+        Bundle args = new Bundle();
+        args.putBoolean(TAG_IMOJI_BUNDLE_ARG_KEY, tag);
+        f.setArguments(args);
+
+        return f;
+    }
 
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mDoTagging = getArguments().getBoolean(TAG_IMOJI_BUNDLE_ARG_KEY, true);
+        }
     }
 
     public void setEditorBitmap(Bitmap bitmap) {
@@ -91,6 +116,11 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
 
         configureToolbar(v);
 
+        if (savedInstanceState != null ) {
+            mIsProcessing = savedInstanceState.getBoolean(IS_PROCESSING_BUNDLE_ARG_KEY);
+        }
+        mProgressBar = (ProgressBar) v.findViewById(R.id.imoji_progress);
+        mProgressBar.setVisibility(mIsProcessing ? View.VISIBLE : View.GONE);
 
         mUndoButton = (ImageButton) v.findViewById(R.id.imoji_ib_undo);
         mUndoButton.setVisibility(View.GONE);
@@ -104,13 +134,13 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
             }
         });
 
-        mTagButton = (ImageButton) v.findViewById(R.id.imoji_ib_tag);
-        mTagButton.setVisibility(View.GONE);
-        mTagButton.setOnClickListener(new View.OnClickListener() {
+        mNextButton = (ImageButton) v.findViewById(R.id.imoji_ib_tag);
+        mNextButton.setVisibility(View.GONE);
+        mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mIGEditorView.isImojiReady() && !mIsTagging) {
-                    mIsTagging = true;
+                if (mIGEditorView.isImojiReady() && !mIsProcessing) {
+                    mIsProcessing = true;
                     mIGEditorView.getTrimmedOutputBitmap(new IGEditorView.BitmapListener() {
                         @Override
                         public void onBitmapOutputReady(Bitmap bitmap) {
@@ -119,12 +149,22 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
                                 f.mTrimmedBitmap = bitmap;
 
                                 if (isResumed()) {
-                                    TagImojiFragment tagImojiFragment = new TagImojiFragment();
-                                    getFragmentManager().beginTransaction().addToBackStack(null).add(R.id.imoji_tag_container, tagImojiFragment).commit();
+                                    if (mDoTagging) {
+                                        TagImojiFragment tagImojiFragment = new TagImojiFragment();
+                                        getFragmentManager().beginTransaction().addToBackStack(null).add(R.id.imoji_tag_container, tagImojiFragment).commit();
+                                        mIsProcessing = false;
+                                    } else {
+                                        mProgressBar.setVisibility(View.VISIBLE);
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                                            new OutlineAsyncTask(ImojiEditorFragment.this, bitmap, ImojiContants.IMOJI_WIDTH_BOUND, ImojiContants.IMOJI_HEIGHT_BOUND).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                        } else {
+                                            new OutlineAsyncTask(ImojiEditorFragment.this, bitmap, ImojiContants.IMOJI_WIDTH_BOUND, ImojiContants.IMOJI_HEIGHT_BOUND).execute();
+                                        }
+                                    }
                                 }
 
                             }
-                            mIsTagging = false;
+
                         }
                     });
 
@@ -194,12 +234,12 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
             public void onStateChanged(int igEditorState, int igEditorSubstate) {
                 switch (igEditorState) {
                     case IG.EDITOR_DRAW:
-                        mTagButton.setVisibility(View.GONE);
+                        mNextButton.setVisibility(View.GONE);
                         mIGEditorView.setImageAlpha(225);
                         break;
                     case IG.EDITOR_NUDGE:
                         mIGEditorView.setImageAlpha(0x66);
-                        mTagButton.setVisibility(View.VISIBLE);
+                        mNextButton.setVisibility(View.VISIBLE);
                         break;
                 }
 
@@ -208,7 +248,7 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
                 } else {
                     mUndoButton.setVisibility(View.GONE);
                 }
-                Log.d(LOG_TAG, "state changed to: " + igEditorState + " subState: " + igEditorSubstate);
+//                Log.d(LOG_TAG, "state changed to: " + igEditorState + " subState: " + igEditorSubstate);
 
                 //if there's a state change, lets serialize the data
                 if (mIGEditorView != null) {
@@ -270,9 +310,25 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
         }
 
         outState.putByteArray(EDITOR_STATE_BUNDLE_ARG_KEY, mStateData);
-        
+        outState.putBoolean(IS_PROCESSING_BUNDLE_ARG_KEY, mIsProcessing);
+
         super.onSaveInstanceState(outState);
 
+    }
+
+    @Override
+    public void onOutlinedBitmapReady(Bitmap outlinedBitmap) {
+        if (isAdded()) {
+            EditorBitmapCache.getInstance().put(EditorBitmapCache.Keys.OUTLINED_BITMAP, outlinedBitmap);
+            if (outlinedBitmap != null) {
+                ImojiApi.with(getActivity()).createImoji(outlinedBitmap, Collections.EMPTY_LIST, new CreateCallback(getActivity()));
+            } else {
+                getActivity().setResult(Activity.RESULT_CANCELED, null);
+                getActivity().finishActivity(ImojiEditorActivity.START_EDITOR_REQUEST_CODE);
+            }
+        } else {
+            mIsProcessing = false;
+        }
     }
 
 

@@ -30,12 +30,15 @@ public class MainActivity extends AppCompatActivity {
 //        setSupportActionBar(toolbar);
 
 
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.sample, options);
-        EditorBitmapCache.getInstance().put(EditorBitmapCache.Keys.INPUT_BITMAP, bitmap);
-        Intent intent = new Intent(this, ImojiEditorActivity.class);
-        startActivityForResult(intent, ImojiEditorActivity.START_EDITOR_REQUEST_CODE);
+        if (savedInstanceState == null) {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.sample, options);
+            EditorBitmapCache.getInstance().put(EditorBitmapCache.Keys.INPUT_BITMAP, bitmap);
+            Intent intent = new Intent(this, ImojiEditorActivity.class);
+            intent.putExtra(ImojiEditorActivity.TAG_IMOJI_BUNDLE_ARG_KEY, false);
+            startActivityForResult(intent, ImojiEditorActivity.START_EDITOR_REQUEST_CODE);
+        }
 
     }
 

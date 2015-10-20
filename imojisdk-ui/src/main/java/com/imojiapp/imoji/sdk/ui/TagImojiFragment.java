@@ -31,7 +31,6 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.imojiapp.imoji.sdk.ImojiApi;
 import com.imojiapp.imoji.sdk.ui.utils.EditorBitmapCache;
 import com.imojiapp.imoji.sdk.ui.utils.ScrimUtil;
 
@@ -42,10 +41,11 @@ import java.util.List;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class TagImojiFragment extends Fragment implements OutlineAsyncTask.OutlinedBitmapReadyListener{
+public class TagImojiFragment extends Fragment implements OutlineAsyncTask.OutlinedBitmapReadyListener {
     public static final String FRAGMENT_TAG = TagImojiFragment.class.getSimpleName();
     private static final String LOG_TAG = TagImojiFragment.class.getSimpleName();
     private static final String TAGS_BUNDLE_ARG_KEY = "TAGS_BUNDLE_ARG_KEY";
+    private static final String IS_PROCESSING_BUNDLE_ARG_KEY = "IS_PROCESSING_BUNDLE_ARG_KEY";
 
     Toolbar mToolbar;
     TextView mTitleTv;
@@ -57,15 +57,13 @@ public class TagImojiFragment extends Fragment implements OutlineAsyncTask.Outli
     ImageButton mUploadButton;
     ProgressBar mProgress;
     ImageButton mClearInputBt;
-
-
     View mTagEditor;
 
     private boolean mIsProcessing;
-    private boolean mIsDone;
 
     private ImojiEditorFragment.BitmapRetainerFragment mBitmapRetainerFragment;
     private InputMethodManager mInputMethodManager;
+
     private EditText.OnEditorActionListener mKeyActionListener = new TextView.OnEditorActionListener() {
         @Override
         public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -82,24 +80,25 @@ public class TagImojiFragment extends Fragment implements OutlineAsyncTask.Outli
             return true;
         }
     };
+
     private View.OnClickListener mOnDoneClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
 
-            if (isAdded() && !mIsProcessing) {
+            if (isResumed() && !mIsProcessing) {
                 if (mProgress != null) {
                     mProgress.setVisibility(View.VISIBLE);
                 }
                 mIsProcessing = true;
-                ImojiApi.with(getActivity()).createImoji(mBitmapRetainerFragment.mTrimmedBitmap, getTags(), new CreateCallback(getActivity()));
+                CreateTaskFragment f = (CreateTaskFragment) getFragmentManager().findFragmentByTag(CreateTaskFragment.FRAGMENT_TAG);
+                if (f == null) {
+                    f = CreateTaskFragment.newInstance(getTags(), false);
+                }
+                getFragmentManager().beginTransaction().add(f, CreateTaskFragment.FRAGMENT_TAG).commit();
+
             }
         }
     };
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -118,6 +117,8 @@ public class TagImojiFragment extends Fragment implements OutlineAsyncTask.Outli
         mUploadButton = (ImageButton) v.findViewById(R.id.ib_upload);
         mUploadButton.setOnClickListener(mOnDoneClickListener);
         mProgress = (ProgressBar) v.findViewById(R.id.imoji_progress);
+
+
         mToolbar = (Toolbar) v.findViewById(R.id.imoji_toolbar);
         mToolbar.setNavigationIcon(R.drawable.create_back);
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -154,6 +155,8 @@ public class TagImojiFragment extends Fragment implements OutlineAsyncTask.Outli
             for (String tag : tags) {
                 addTagChip(tag);
             }
+
+            mProgress.setVisibility(savedInstanceState.getBoolean(IS_PROCESSING_BUNDLE_ARG_KEY) ? View.VISIBLE : View.GONE);
         }
 
     }
@@ -187,9 +190,9 @@ public class TagImojiFragment extends Fragment implements OutlineAsyncTask.Outli
 
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                    new OutlineAsyncTask(TagImojiFragment.this, imojiBitmap, width, height).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    new OutlineAsyncTask(imojiBitmap, width, height, TagImojiFragment.this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 } else {
-                    new OutlineAsyncTask(TagImojiFragment.this, imojiBitmap, width, height).execute();
+                    new OutlineAsyncTask(imojiBitmap, width, height, TagImojiFragment.this).execute();
                 }
             }
         });
@@ -198,6 +201,7 @@ public class TagImojiFragment extends Fragment implements OutlineAsyncTask.Outli
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putStringArrayList(TAGS_BUNDLE_ARG_KEY, getTags());
+        outState.putBoolean(IS_PROCESSING_BUNDLE_ARG_KEY, mIsProcessing);
         super.onSaveInstanceState(outState);
     }
 

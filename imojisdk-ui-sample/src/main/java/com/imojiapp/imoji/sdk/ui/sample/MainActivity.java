@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -13,6 +14,7 @@ import android.util.Log;
 import android.widget.ImageView;
 
 import com.imojiapp.imoji.sdk.Imoji;
+import com.imojiapp.imoji.sdk.ui.CreateTaskFragment;
 import com.imojiapp.imoji.sdk.ui.ImojiEditorActivity;
 import com.imojiapp.imoji.sdk.ui.ImojiEditorFragment;
 import com.imojiapp.imoji.sdk.ui.utils.EditorBitmapCache;
@@ -36,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
             Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.sample, options);
             EditorBitmapCache.getInstance().put(EditorBitmapCache.Keys.INPUT_BITMAP, bitmap);
             Intent intent = new Intent(this, ImojiEditorActivity.class);
-            intent.putExtra(ImojiEditorActivity.TAG_IMOJI_BUNDLE_ARG_KEY, false);
+//            intent.putExtra(ImojiEditorActivity.TAG_IMOJI_BUNDLE_ARG_KEY, false);
             startActivityForResult(intent, ImojiEditorActivity.START_EDITOR_REQUEST_CODE);
         }
 

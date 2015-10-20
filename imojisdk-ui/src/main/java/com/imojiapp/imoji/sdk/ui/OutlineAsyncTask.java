@@ -4,7 +4,6 @@ import android.graphics.Bitmap;
 import android.os.AsyncTask;
 
 import com.imojiapp.imoji.sdk.BitmapUtils;
-import com.imojiapp.imoji.sdk.ui.utils.EditorBitmapCache;
 import com.imojiapp.imojigraphics.IG;
 
 import java.lang.ref.WeakReference;
@@ -16,10 +15,10 @@ class OutlineAsyncTask extends AsyncTask<Void, Void, Bitmap> {
     private final Bitmap mImojiBitmap;
     private final int mWidth;
     private final int mHeight;
-    private WeakReference<OutlinedBitmapReadyListener> mFragmentWeakRef;
+    private WeakReference<OutlinedBitmapReadyListener> mListenerWeakReference;
 
-    public OutlineAsyncTask(OutlinedBitmapReadyListener f, Bitmap imojiBitmap, int width, int height) {
-        mFragmentWeakRef = new WeakReference<>(f);
+    public OutlineAsyncTask(Bitmap imojiBitmap, int width, int height, OutlinedBitmapReadyListener f) {
+        mListenerWeakReference = new WeakReference<>(f);
         mImojiBitmap = imojiBitmap;
         mWidth = width;
         mHeight = height;
@@ -55,7 +54,7 @@ class OutlineAsyncTask extends AsyncTask<Void, Void, Bitmap> {
 
     @Override
     protected void onPostExecute(Bitmap b) {
-        OutlinedBitmapReadyListener outlinedBitmapReadyListener = mFragmentWeakRef.get();
+        OutlinedBitmapReadyListener outlinedBitmapReadyListener = mListenerWeakReference.get();
 
         if (outlinedBitmapReadyListener != null) {
             outlinedBitmapReadyListener.onOutlinedBitmapReady(b);

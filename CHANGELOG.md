@@ -1,4 +1,8 @@
 * Updates
+#0.1.5
+- Added ability to skip tagging screen which will effectively make a private imoji
+- Restructured code to use retained fragments during the creation process
+
 #0.1.4
 - Fixed undo button misbehavior in the editor
 - Updated graphics lib

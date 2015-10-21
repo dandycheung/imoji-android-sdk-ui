@@ -22,7 +22,6 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 
 import com.imojiapp.imoji.sdk.BitmapUtils;
-import com.imojiapp.imoji.sdk.ImojiApi;
 import com.imojiapp.imoji.sdk.ui.utils.EditorBitmapCache;
 import com.imojiapp.imoji.sdk.ui.utils.ScrimUtil;
 import com.imojiapp.imojigraphics.IG;
@@ -30,16 +29,15 @@ import com.imojiapp.imojigraphics.IGEditorView;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collections;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.OnGlobalLayoutListener{
+public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.OnGlobalLayoutListener {
     public static final String FRAGMENT_TAG = ImojiEditorFragment.class.getSimpleName();
     public static final String EDITOR_STATE_BUNDLE_ARG_KEY = "EDITOR_STATE_BUNDLE_ARG_KEY";
-    static final String TAG_IMOJI_BUNDLE_ARG_KEY = "TAG_IMOJI_BUNDLE_ARG_KEY";
     public static final String IS_PROCESSING_BUNDLE_ARG_KEY = "IS_PROCESSING_BUNDLE_ARG_KEY";
+    static final String TAG_IMOJI_BUNDLE_ARG_KEY = "TAG_IMOJI_BUNDLE_ARG_KEY";
     private static final String LOG_TAG = ImojiEditorFragment.class.getSimpleName();
 
 
@@ -61,7 +59,16 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
     private boolean mIsProcessing;
     private int mWidthBound = 0;
     private int mHeightBound = 0;
-
+    private IGEditorView.UndoListener mUndoListener = new IGEditorView.UndoListener() {
+        @Override
+        public void onUndone(boolean canUndo) {
+            if (!canUndo) {
+                if (mUndoButton != null && mIGEditorView != null) {
+                    mUndoButton.setVisibility(View.GONE);
+                }
+            }
+        }
+    };
 
     public static ImojiEditorFragment newInstance(boolean tag) {
         ImojiEditorFragment f = new ImojiEditorFragment();
@@ -71,7 +78,6 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
 
         return f;
     }
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -90,7 +96,6 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
         if (mPreScaleBitmap != null && mWidthBound != 0 && mHeightBound != 0) {
             new BitmapScaleAsyncTask(this).execute(new BitmapScaleAsyncTask.Params(mPreScaleBitmap, mWidthBound, mHeightBound));
         }
-
     }
 
     @Override
@@ -101,23 +106,12 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
         return v;
     }
 
-    private IGEditorView.UndoListener mUndoListener = new IGEditorView.UndoListener() {
-        @Override
-        public void onUndone(boolean canUndo) {
-            if (!canUndo) {
-                if (mUndoButton != null && mIGEditorView != null) {
-                    mUndoButton.setVisibility(View.GONE);
-                }
-            }
-        }
-    };
-
     @Override
     public void onViewCreated(View v, Bundle savedInstanceState) {
 
         configureToolbar(v);
 
-        if (savedInstanceState != null ) {
+        if (savedInstanceState != null) {
             mIsProcessing = savedInstanceState.getBoolean(IS_PROCESSING_BUNDLE_ARG_KEY);
         }
         mProgressBar = (ProgressBar) v.findViewById(R.id.imoji_progress);
@@ -176,7 +170,9 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
         });
 
         mIGEditorView = (IGEditorView) v.findViewById(R.id.imoji_editor_view);
-        initEditor(savedInstanceState);
+        if (Build.VERSION.SDK_INT >= 11) { //init once because we will be preserving the egl context
+            initEditor();
+        }
     }
 
     private void configureToolbar(View v) {
@@ -221,11 +217,14 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
         }
     }
 
-    private void initEditor(Bundle savedInstanceState) {
+    private void initEditor() {
 
         TypedArray typedArray = getActivity().obtainStyledAttributes(new int[]{android.R.attr.windowBackground});
         int windowBackground = typedArray.getColor(0, Color.BLACK);
         typedArray.recycle();
+        if (Build.VERSION.SDK_INT >= 11) { //preserve egl context on pause
+            mIGEditorView.setPreserveEGLContextOnPause(true);
+        }
         mIGEditorView.setGLBackgroundColor(windowBackground);
         mIGEditorView.gravitateTo(0, -1);
 //        mIGEditorView.setGLBackgroundColor(Color.parseColor("#00000000"));
@@ -265,29 +264,26 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
             }
         });
 
-//        if (savedInstanceState != null) {
-//            if (savedInstanceState.containsKey(EDITOR_STATE_BUNDLE_ARG_KEY)) {
-//                mIGEditorView.deserialize(savedInstanceState.getByteArray(EDITOR_STATE_BUNDLE_ARG_KEY));
-//            }
-//        }
+        if (Build.VERSION.SDK_INT < 11 && mStateData != null) {
+            mIGEditorView.deserialize(mStateData);
+        }
+
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        mBitmapRetainerFragment = findOrCreateRetainedFragment();
-        if (savedInstanceState != null) {
-            mPreScaleBitmap = mBitmapRetainerFragment.mPreScaledBitmap;
-            mStateData = savedInstanceState.getByteArray(EDITOR_STATE_BUNDLE_ARG_KEY);
-            if (mStateData != null) {
-                mIGEditorView.deserialize(mStateData);
-            }
-
-            if (mIGEditorView.canUndo()) {
-                mUndoButton.setVisibility(View.VISIBLE);
-            }
-
+    public void onResume() {
+        super.onResume();
+        if (Build.VERSION.SDK_INT < 11) { //init because we won't have the egl context preserved
+            initEditor();
         }
+        mIGEditorView.onResume();
+
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mIGEditorView.onPause();
     }
 
     @Override
@@ -303,33 +299,6 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
 
         launchBitmapScaleTask();
 
-    }
-
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        if (mPreScaleBitmap != null && mBitmapRetainerFragment != null) {
-            mBitmapRetainerFragment.mPreScaledBitmap = mPreScaleBitmap;
-        }
-
-        outState.putByteArray(EDITOR_STATE_BUNDLE_ARG_KEY, mStateData);
-        outState.putBoolean(IS_PROCESSING_BUNDLE_ARG_KEY, mIsProcessing);
-
-        super.onSaveInstanceState(outState);
-
-    }
-
-    public static class BitmapRetainerFragment extends Fragment {
-        public static final String FRAGMENT_TAG = BitmapRetainerFragment.class.getSimpleName();
-
-        Bitmap mPreScaledBitmap; //store the bitmap across config changes
-        Bitmap mTrimmedBitmap;
-
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            setRetainInstance(true);
-        }
     }
 
     public BitmapRetainerFragment findOrCreateRetainedFragment() {
@@ -374,6 +343,18 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
         }
     }
 
+    public static class BitmapRetainerFragment extends Fragment {
+        public static final String FRAGMENT_TAG = BitmapRetainerFragment.class.getSimpleName();
+
+        Bitmap mPreScaledBitmap; //store the bitmap across config changes
+        Bitmap mTrimmedBitmap;
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setRetainInstance(true);
+        }
+    }
 
     static class BitmapScaleAsyncTask extends AsyncTask<BitmapScaleAsyncTask.Params, Void, Bitmap> {
 
@@ -408,7 +389,7 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
             }
         }
 
-        public static class Params{
+        public static class Params {
             public Bitmap mSource;
             public int mWidthBound;
             public int mHeightBound;
@@ -419,6 +400,38 @@ public class ImojiEditorFragment extends Fragment implements ViewTreeObserver.On
                 mHeightBound = heightBound;
             }
         }
+
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        mBitmapRetainerFragment = findOrCreateRetainedFragment();
+        if (savedInstanceState != null) {
+            mPreScaleBitmap = mBitmapRetainerFragment.mPreScaledBitmap;
+            mStateData = savedInstanceState.getByteArray(EDITOR_STATE_BUNDLE_ARG_KEY);
+            if (mStateData != null) {
+                mIGEditorView.deserialize(mStateData);
+            }
+
+            if (mIGEditorView.canUndo()) {
+                mUndoButton.setVisibility(View.VISIBLE);
+            }
+
+        }
+    }
+
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        if (mPreScaleBitmap != null && mBitmapRetainerFragment != null) {
+            mBitmapRetainerFragment.mPreScaledBitmap = mPreScaleBitmap;
+        }
+
+        outState.putByteArray(EDITOR_STATE_BUNDLE_ARG_KEY, mStateData);
+        outState.putBoolean(IS_PROCESSING_BUNDLE_ARG_KEY, mIsProcessing);
+
+        super.onSaveInstanceState(outState);
 
     }
 

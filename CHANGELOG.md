@@ -1,4 +1,7 @@
 * Updates
+#0.1.6
+- Properly handle Activity lifecycle events for the GLSurfaceView
+
 #0.1.5
 - Added ability to skip tagging screen which will effectively make a private imoji
 - Restructured code to use retained fragments during the creation process

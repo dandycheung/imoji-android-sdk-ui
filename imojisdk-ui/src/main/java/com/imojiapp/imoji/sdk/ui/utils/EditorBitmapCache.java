@@ -37,4 +37,9 @@ public final class EditorBitmapCache extends android.support.v4.util.LruCache<St
         super(maxSize);
     }
 
+    public void clearNonOutlinedBitmaps() {
+        remove(EditorBitmapCache.Keys.TRIMMED_BITMAP);
+        remove(EditorBitmapCache.Keys.INPUT_BITMAP);
+    }
+
 }

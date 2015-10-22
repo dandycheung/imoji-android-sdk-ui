@@ -123,11 +123,13 @@ public class CreateTaskFragment extends Fragment implements OutlineAsyncTask.Out
     }
 
     private void notifyFailure(Activity a) {
+        EditorBitmapCache.getInstance().clearNonOutlinedBitmaps();
         a.setResult(Activity.RESULT_CANCELED, null);
         a.finish();
     }
 
     private void notifySuccess(Imoji result, Activity a) {
+        EditorBitmapCache.getInstance().clearNonOutlinedBitmaps();
         Intent intent = new Intent();
         intent.putExtra(ImojiEditorActivity.IMOJI_MODEL_BUNDLE_ARG_KEY, result);
         a.setResult(Activity.RESULT_OK, intent);

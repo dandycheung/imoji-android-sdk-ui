@@ -60,6 +60,9 @@ public class ImojiCreateService extends IntentService {
 
         waitForCreateToFinish(latch, token);
 
+        //clear editor bitmaps excpet for the outlined one
+        EditorBitmapCache.getInstance().clearNonOutlinedBitmaps();
+
     }
 
     private void waitForCreateToFinish(CountDownLatch latch, String token) {

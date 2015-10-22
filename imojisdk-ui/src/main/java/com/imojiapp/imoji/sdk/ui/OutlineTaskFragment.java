@@ -76,11 +76,13 @@ public class OutlineTaskFragment extends Fragment implements OutlineAsyncTask.Ou
     }
 
     private void notifyFailure(Activity a) {
+        EditorBitmapCache.getInstance().clearNonOutlinedBitmaps();
         a.setResult(Activity.RESULT_CANCELED, null);
         a.finish();
     }
 
     private void notifySuccess(String token, Activity a) {
+        EditorBitmapCache.getInstance().clearNonOutlinedBitmaps();
         Intent intent = new Intent();
         intent.putExtra(ImojiEditorActivity.CREATE_TOKEN_BUNDLE_ARG_KEY, token);
         a.setResult(Activity.RESULT_OK, intent);

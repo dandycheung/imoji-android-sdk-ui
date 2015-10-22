@@ -35,7 +35,7 @@ public class ImojiCreateService extends IntentService {
         final String token = intent.getStringExtra(CREATE_TOKEN_BUNDLE_ARG_KEY); //the token that will contain the bitmap in memory and also used to bind to the newly created imoji
         List<String> tags = intent.getStringArrayListExtra(TAGS_BUNDLE_ARG_KEY);
 
-        Bitmap b = EditorBitmapCache.getInstance().get(token);
+        Bitmap b = EditorBitmapCache.getInstance().remove(token);
         if (b == null) {
             //notify failure
             notifyFailure(token);

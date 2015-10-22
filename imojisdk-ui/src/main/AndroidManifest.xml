@@ -10,6 +10,8 @@
             android:name=".ImojiEditorActivity"
             android:windowSoftInputMode="adjustNothing"></activity>
 
+        <service android:name=".ImojiCreateService" android:exported="false"></service>
+
     </application>
 
 </manifest>

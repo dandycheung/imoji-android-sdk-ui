@@ -1,7 +1,9 @@
 package com.imojiapp.imoji.sdk.ui;
 
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -36,6 +38,7 @@ import com.imojiapp.imoji.sdk.ui.utils.ScrimUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 /**
@@ -44,8 +47,23 @@ import java.util.List;
 public class TagImojiFragment extends Fragment implements OutlineAsyncTask.OutlinedBitmapReadyListener {
     public static final String FRAGMENT_TAG = TagImojiFragment.class.getSimpleName();
     private static final String LOG_TAG = TagImojiFragment.class.getSimpleName();
-    private static final String TAGS_BUNDLE_ARG_KEY = "TAGS_BUNDLE_ARG_KEY";
-    private static final String IS_PROCESSING_BUNDLE_ARG_KEY = "IS_PROCESSING_BUNDLE_ARG_KEY";
+    public static final String TAGS_BUNDLE_ARG_KEY = "TAGS_BUNDLE_ARG_KEY";
+    public static final String IS_PROCESSING_BUNDLE_ARG_KEY = "IS_PROCESSING_BUNDLE_ARG_KEY";
+    public static final String RETURN_IMMEDIATELY_BUNDLE_ARG_KEY = "RETURN_IMMEDIATELY_BUNDLE_ARG_KEY";
+
+
+    public static TagImojiFragment newInstance(boolean returnImmediately) {
+        TagImojiFragment f = new TagImojiFragment();
+
+        Bundle args = new Bundle();
+        args.putBoolean(RETURN_IMMEDIATELY_BUNDLE_ARG_KEY, returnImmediately);
+        f.setArguments(args);
+        return f;
+    }
+
+    public static TagImojiFragment newInstance() {
+        return newInstance(false);
+    }
 
     Toolbar mToolbar;
     TextView mTitleTv;
@@ -60,6 +78,7 @@ public class TagImojiFragment extends Fragment implements OutlineAsyncTask.Outli
     View mTagEditor;
 
     private boolean mIsProcessing;
+    private boolean mReturnImmediately;
 
     private ImojiEditorFragment.BitmapRetainerFragment mBitmapRetainerFragment;
     private InputMethodManager mInputMethodManager;
@@ -90,15 +109,35 @@ public class TagImojiFragment extends Fragment implements OutlineAsyncTask.Outli
                     mProgress.setVisibility(View.VISIBLE);
                 }
                 mIsProcessing = true;
-                CreateTaskFragment f = (CreateTaskFragment) getFragmentManager().findFragmentByTag(CreateTaskFragment.FRAGMENT_TAG);
-                if (f == null) {
-                    f = CreateTaskFragment.newInstance(getTags(), false);
+                if (mReturnImmediately) {
+                    String token = UUID.randomUUID().toString();
+                    EditorBitmapCache.getInstance().put(token, EditorBitmapCache.getInstance().get(EditorBitmapCache.Keys.TRIMMED_BITMAP));
+
+                    Intent intent = new Intent();
+                    intent.setClass(getActivity(), ImojiCreateService.class);
+                    intent.putExtra(ImojiCreateService.CREATE_TOKEN_BUNDLE_ARG_KEY, token);
+                    getActivity().startService(intent);
+
+                    notifySuccess(token);
+
+                } else {
+
+                    CreateTaskFragment f = (CreateTaskFragment) getFragmentManager().findFragmentByTag(CreateTaskFragment.FRAGMENT_TAG);
+                    if (f == null) {
+                        f = CreateTaskFragment.newInstance(getTags(), false);
+                    }
+                    getFragmentManager().beginTransaction().add(f, CreateTaskFragment.FRAGMENT_TAG).commit();
                 }
-                getFragmentManager().beginTransaction().add(f, CreateTaskFragment.FRAGMENT_TAG).commit();
 
             }
         }
     };
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mReturnImmediately = getArguments().getBoolean(RETURN_IMMEDIATELY_BUNDLE_ARG_KEY);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -271,11 +310,34 @@ public class TagImojiFragment extends Fragment implements OutlineAsyncTask.Outli
 
     @Override
     public void onOutlinedBitmapReady(Bitmap outlinedBitmap) {
-        if (mImojiIv != null) {
-            mImojiIv.setImageBitmap(outlinedBitmap);
-        }
 
-        //also save it to cache
-        EditorBitmapCache.getInstance().put(EditorBitmapCache.Keys.OUTLINED_BITMAP, outlinedBitmap);
+        if (isAdded()) {
+
+            if (outlinedBitmap == null) {
+                notifyFailure();
+                return;
+            }
+
+            if (mImojiIv != null) {
+                mImojiIv.setImageBitmap(outlinedBitmap);
+            }
+
+            //also save it to cache
+            EditorBitmapCache.getInstance().put(EditorBitmapCache.Keys.OUTLINED_BITMAP, outlinedBitmap);
+        }
+    }
+
+    private void notifyFailure() {
+        //notify of failure
+        getActivity().setResult(Activity.RESULT_CANCELED);
+        getActivity().finish();
+    }
+
+    private void notifySuccess(String token) {
+        Intent intent = new Intent();
+        intent.putExtra(ImojiEditorActivity.CREATE_TOKEN_BUNDLE_ARG_KEY, token);
+        getActivity().setResult(Activity.RESULT_OK, intent);
+        getActivity().finish();
+
     }
 }

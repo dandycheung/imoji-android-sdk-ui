@@ -124,7 +124,7 @@ public class CreateTaskFragment extends Fragment implements OutlineAsyncTask.Out
 
     private void notifyFailure(Activity a) {
         a.setResult(Activity.RESULT_CANCELED, null);
-        a.finishActivity(ImojiEditorActivity.START_EDITOR_REQUEST_CODE);
+        a.finish();
     }
 
     private void notifySuccess(Imoji result, Activity a) {

@@ -1,4 +1,5 @@
-* Updates
+#Updates
+
 #0.1.7
 - Added new option to allow for an outlined bitmap to be returned immediately while letting the
   Imoji object registration happen in the background

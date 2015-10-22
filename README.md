@@ -64,8 +64,44 @@ Now that you have integrated the SDK, you can use the imoji creator in your app.
 4. Optional: Skip tagging
     You can optionally skip tagging by setting the intent key `ImojiEditorActivity.TAG_IMOJI_BUNDLE_ARG_KEY` to `false` when starting ImojiEditorActivity.
     Note, however, that the imoji will NOT be searchable, so your users will not be able to find the imoji by searching tags.
+
+5. Optional: Return Outlined Image Immediately, while returning the Imoji object Asynchronously
+    You can optionally receive the outlined imoji bitmap immediately by setting the intent key `ImojiEditorActivity.RETURN_IMMEDIATELY_BUNDLE_ARG_KEY` to `true` when starting ImojiEditorActivity.
+    The imoji object will be returned to you in a LocalBroadcast. You will need to register a receiver like such:
+    
+    ```java
+    public void onCreate(Bundle savedInstanceState){
+       super.onCreate(savedInstanceState);
+       
+       ...
+       
+       ImojiCreateReceiver mReceiver = new ImojiCreateReceiver(); 
+       LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter(ImojiIntents.Create.IMOJI_CREATE_INTERNAL_INTENT_ACTION));
+    
+    }
+    ```
+    
+    Here's a sample receiver:
+    
+    ```java
+    public class ImojiCreateReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            boolean status = intent.getBooleanExtra(ImojiIntents.Create.STATUS_BUNDLE_ARG_KEY, false);
+            if (status) { //success?
+                Imoji imoji = intent.getParcelableExtra(ImojiIntents.Create.IMOJI_MODEL_BUNDLE_ARG_KEY);
+                String token = intent.getStringExtra(ImojiIntents.Create.CREATE_TOKEN_BUNDLE_ARG_KEY);
+                Toast.makeText(MainActivity.this, "got imoji: " + imoji.getImojiId(), Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(MainActivity.this, "imoji creation failed", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+    ```
  
-5. Override `onActivityResult` in your Activity. If the Activity result was `RESULT_OK`, you can obtained the outlined imoji bitmap from the `EditorBitmapCache` using the `EditorBitmapCache.Keys.OUTLINED_BITMAP` cache key.
+6. Override `onActivityResult` in your Activity. If the Activity result was `RESULT_OK`, you can obtained the outlined imoji bitmap from the `EditorBitmapCache` using the `EditorBitmapCache.Keys.OUTLINED_BITMAP` cache key.
+   Note that if you set the `ImojiEditorActivity.RETURN_IMMEDIATELY_BUNDLE_ARG_KEY` to `true` then you will not receive the imoji object but will instead get a token to match with your receiver from step 5. 
 ```java
 @Override
 protected void onActivityResult(int requestCode, int resultCode, Intent data) {
